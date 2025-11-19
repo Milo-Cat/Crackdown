@@ -1,0 +1,62 @@
+package net.spudacious5705.crackdown;
+
+import com.mojang.logging.LogUtils;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.spudacious5705.crackdown.client.CrackdownClient;
+import net.spudacious5705.crackdown.database.DatabaseManager;
+import org.slf4j.Logger;
+
+// The value here should match an entry in the META-INF/mods.toml file
+@Mod(Crackdown.MODID)
+public class Crackdown {
+
+    // Define mod id in a common place for everything to reference
+    public static final String MODID = "crackdown";
+    // Directly reference a slf4j logger
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    public static void report(String r){
+        LOGGER.info("BREAK CAUSED BY {}",r);
+    }
+
+    public Crackdown() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> CrackdownClient::init);
+
+        // Register ourselves for server and other game events we are interested in
+        MinecraftForge.EVENT_BUS.register(this);
+
+    }
+
+
+    // You can use SubscribeEvent and let the Event Bus discover methods to call
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
+        // Do something when the server starts
+        LOGGER.info("CRACKDOWN says: hello!");
+        DatabaseManager.init(event, LOGGER);
+
+    }
+
+    @SubscribeEvent
+    public void onServerStopping(ServerStoppingEvent event) {
+        DatabaseManager.serverStopping();
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        DatabaseManager.serverStopped();
+    }
+
+}

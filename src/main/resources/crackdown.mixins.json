@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.spudacious5705.crackdown.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "crackdown.refmap.json",
+  "mixins": [
+    "BlockEntityDatabaseIDmixin",
+    "EntityDatabaseIDmixin",
+    "PlayerDatabaseIDmixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
