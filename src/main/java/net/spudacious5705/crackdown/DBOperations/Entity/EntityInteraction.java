@@ -1,26 +1,47 @@
-package net.spudacious5705.crackdown.DBOperations.Block;
+package net.spudacious5705.crackdown.DBOperations.Entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
 import net.spudacious5705.crackdown.DBOperations.TimestampedPositionalEntry;
-import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
+import net.spudacious5705.crackdown.database.DatabaseManager;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class BreakBlockSQL extends TimestampedPositionalEntry {
-
+public class EntityInteraction extends TimestampedPositionalEntry {
+    final int entityID;
+    final String source;
     final int playerID;
+    final String action;
+    final String info;
 
-    protected BreakBlockSQL(BlockPos pos, String dimension, @Nullable Player player) {
+    public static void log(@NotNull BlockPos pos, @NotNull String dimension, int entityID, @NotNull String source, int playerID, @NotNull String action, @Nullable String info){
+        DatabaseManager.queueEntry(
+                new EntityInteraction(
+                        pos,
+                        dimension,
+                        entityID,
+                        source,
+                        playerID,
+                        action,
+                        info
+                )
+        );
+    }
+
+    public static void log(@NotNull BlockPos pos, @NotNull String dimension, int entityID, @NotNull String source, @NotNull String action, @Nullable String info){
+        log(pos,dimension,entityID,source,-1,action,info);
+    }
+
+    protected EntityInteraction(@NotNull BlockPos pos, @NotNull String dimension, int entityID, @NotNull String source, int playerID, @NotNull String action, @Nullable String info) {
         super(pos, dimension);
-        if(player != null){
-            playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
-        } else {
-            playerID = -1;
-        }
+        this.entityID = entityID;
+        this.source = source;
+        this.playerID = playerID;
+        this.action = action;
+        this.info = info;
     }
 
     @Override
@@ -28,7 +49,7 @@ public class BreakBlockSQL extends TimestampedPositionalEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    INSERT INTO block_interaction (
+                    INSERT INTO entity_interaction (
                     timestamp,
                     x,
                     y,
