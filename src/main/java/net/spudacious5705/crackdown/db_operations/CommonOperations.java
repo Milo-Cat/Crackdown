@@ -33,6 +33,7 @@ public class CommonOperations {
     private static final Map<String, Integer> ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Integer> ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Integer> ENTITY_ID_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> PLAYER_ACTION_CACHE = new ConcurrentHashMap<>();
 
     // Dimension
     public static int getOrCreateId_Dimension(String name, Connection connection) {
@@ -74,6 +75,12 @@ public class CommonOperations {
     public static int getOrCreateId_EntityAction(String name, Connection connection) {
         return ENTITY_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("entity_action_types", "action", n, connection));
+    }
+
+    // player Action
+    public static int getOrCreateId_PlayerAction(String name, Connection connection) {
+        return PLAYER_ACTION_CACHE.computeIfAbsent(name,
+                n -> getOrCreateResourceId("player_action_types", "action", n, connection));
     }
 
     // entity
@@ -261,7 +268,7 @@ public class CommonOperations {
         clearCaches();
     }
 
-    private static void clearCaches() {
+    private static void clearCaches() {//ordering of database caches may be different across worlds.
         DIMENSION_CACHE.clear();
         BLOCK_CACHE.clear();
         SOURCE_CACHE.clear();
@@ -271,6 +278,7 @@ public class CommonOperations {
         ENTITY_ACTION_CACHE.clear();
         ENTITY_TYPE_CACHE.clear();
         ENTITY_ID_CACHE.clear();
+        PLAYER_ACTION_CACHE.clear();
     }
 
     public static int getOrCreateId_Player(ServerPlayer serverPlayer) {
