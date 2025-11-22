@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.sql.*;
+import java.util.Objects;
 import java.util.UUID;
 
 public class EntityInteraction extends TimestampedPositionalEntry {
@@ -21,6 +22,7 @@ public class EntityInteraction extends TimestampedPositionalEntry {
     final String info;
 
     public static void log(@NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, int playerID, @NotNull String action, @Nullable String info){
+        if(Objects.equals(entityType, "minecraft:item"))return;
         DatabaseManager.queueEntry(
                 new EntityInteraction(
                         pos,
