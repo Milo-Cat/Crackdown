@@ -111,7 +111,15 @@ public class EntityEvents {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();
         if (!event.getLevel().isClientSide) {
-            ((GetDatabaseIdFunc)entity).crackdown$getDatabaseID();
+            EntityInteraction.log(
+                    entity.blockPosition(),
+                    EventsUtil.DimensionName(entity.level()),
+                    entity.getUUID(),
+                    EventsUtil.entityType(entity),
+                    "world",
+                    "spawn",
+                    null
+            );
         }
     }
 
