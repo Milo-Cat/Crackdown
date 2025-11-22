@@ -1,6 +1,8 @@
 package net.spudacious5705.crackdown.events;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ServerboundKeepAlivePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -98,16 +100,27 @@ public class EntityEvents {
     public static void onInteractEntity(PlayerInteractEvent.EntityInteractSpecific event) {
         int playerID = GetDatabaseIdFunc.getDatabaseID(event.getEntity());
         Entity entity = event.getTarget();//entity
-        event.getLevel();
+
+        if(event.getLevel() instanceof ServerLevel level) {
+            CompoundTag tagSnapshot = entity.serializeNBT();
+            //execute at end of tick
+            level.getServer().execute(() -> checkInteraction(level, playerID, entity, tagSnapshot));
+        }
+    }
+
+    private static void checkInteraction(ServerLevel level, int playerID, Entity entity, CompoundTag tagSnapshot){
+        CompoundTag diff = EventsUtil.findDifference(entity.serializeNBT(), tagSnapshot);
+        String info = diff.toString();//todo OFFLOAD difference finding to 3rd thread
+
         EntityInteraction.log(
                 entity.blockPosition(),
-                EventsUtil.DimensionName(event.getLevel()),
+                EventsUtil.DimensionName(level),
                 entity.getUUID(),
                 EventsUtil.entityType(entity),
                 "player",
                 playerID,
                 "INTERACT",
-                null
+                info
         );
     }
 

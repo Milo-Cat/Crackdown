@@ -142,7 +142,7 @@ public class BlockEvents {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)//todo for BOTH of these, need to check if the block has a BE and if it changed.
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onInteractBlock(PlayerInteractEvent.RightClickBlock event) {
         if(event.getUseBlock()== Event.Result.DENY||event.isCanceled())return;
 
@@ -204,7 +204,7 @@ public class BlockEvents {
                 }
                 action="DATA_MODIFIED";
                 BlockEntityBackup.save(beID, newSnapshot, false);
-                CompoundTag diff = EventsUtil.findDifference(newSnapshot,tagSnapshot);
+                CompoundTag diff = EventsUtil.findDifference(newSnapshot,tagSnapshot);//todo OFFLOAD difference finding to 3rd thread
                 info = diff.getAsString();
             } else {
                 action="REPLACED";
