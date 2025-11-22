@@ -12,6 +12,7 @@ public enum Indexes {
     ACTION_TYPE_BLOCK_ENTITY("action_types_block_entity", "block_entity_action_types(action)", true),
     ACTION_TYPE_BLOCK("action_types_block", "block_action_types(action)", true),
     ACTION_TYPE_ENTITY("action_types_entity", "entity_action_types(action)", true),
+    ACTION_TYPE_PLAYER("action_types_player", "player_action_types(action)", true),
     ENTITIES("entity_types", "entity_type(name)", true),
     BLOCK_ENTITIES("block_entity_types", "block_entity_type(name)", true);
 

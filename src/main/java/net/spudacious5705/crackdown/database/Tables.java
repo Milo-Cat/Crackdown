@@ -9,14 +9,29 @@ public enum Tables {
             name TEXT NOT NULL
             """),
 
-    PLAYER_CONNECTION(
-            "connections",
+    PLAYER_EVENTS(
+            "player_events",
             """
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp INTEGER NOT NULL,
             player INTEGER NOT NULL,
-            joined BOOLEAN NOT NULL,
-            FOREIGN KEY (player) REFERENCES players(id) ON DELETE CASCADE
+            action INTEGER NOT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
+            z INTEGER NOT NULL,
+            dimension INTEGER NOT NULL,
+            info TEXT,
+            
+            FOREIGN KEY (dimension) REFERENCES dimension(id),
+            FOREIGN KEY (player) REFERENCES players(id),
+            FOREIGN KEY (action) REFERENCES player_action_types(id)
+            """),
+
+    PLAYER_ACTION_TYPES(
+            "player_action_types",
+            """
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action VARCHAR(24) NOT NULL UNIQUE
             """),
 
     DIMENSION(
