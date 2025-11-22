@@ -1,4 +1,4 @@
-package net.spudacious5705.crackdown.DBOperations.Block;
+package net.spudacious5705.crackdown.db_operations.Block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;

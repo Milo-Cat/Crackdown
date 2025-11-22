@@ -1,11 +1,11 @@
-package net.spudacious5705.crackdown.DBOperations.Block;
+package net.spudacious5705.crackdown.db_operations.Block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.spudacious5705.crackdown.DBOperations.CommonOperations;
-import net.spudacious5705.crackdown.DBOperations.TimestampedPositionalEntry;
+import net.spudacious5705.crackdown.db_operations.CommonOperations;
+import net.spudacious5705.crackdown.db_operations.TimestampedPositionalEntry;
 import net.spudacious5705.crackdown.database.DatabaseManager;
-import net.spudacious5705.crackdown.events.EventsUtil;
+import net.spudacious5705.crackdown.db_operations.Block.BlockDBHelper.BlockStateString;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,35 +15,23 @@ public class BlockInteraction extends TimestampedPositionalEntry {
     final String source;
     final int playerID;
     final String action;
-    final String block_new;
-    final String state_new;
-    final String block_old;
-    final String state_old;
+    final BlockStateString _new;
+    final BlockStateString _old;
     final String nbt;
 
-    protected BlockInteraction(BlockPos pos, String dimension, String source, int playerID, String action, String blockNew, String stateNew, String blockOld, String stateOld, String nbt) {
+    protected BlockInteraction(BlockPos pos, String dimension, String source, int playerID, String action, BlockState old, BlockState now, String nbt) {
         super(pos, dimension);
         this.source = source;
         this.playerID = playerID;
         this.action = action;
-        block_new = blockNew;
-        state_new = stateNew;
-        block_old = blockOld;
-        state_old = stateOld;
+        this._new = BlockDBHelper.getBlockStateAsString(now);
+        this._old = BlockDBHelper.getBlockStateAsString(old);
         this.nbt = nbt;
     }
 
 
     public static void logPhysicsRemoved(BlockPos pos, BlockState state, String dimension){
 
-    }
-
-    private static String getValues(BlockState state){
-        String[] array = state.toString().split("[}]");
-        if(array.length==1){
-            return null;
-        }
-        return array[1];
     }
 
     public static void logPlayerInteraction(BlockPos pos, String dimension, int playerID, BlockState newState, BlockState oldState, String action, String NBT){
@@ -54,10 +42,8 @@ public class BlockInteraction extends TimestampedPositionalEntry {
                 "player",
                 playerID,
                 action,
-                EventsUtil.blockType(newState.getBlock()),
-                getValues(newState),
-                EventsUtil.blockType(oldState.getBlock()),
-                getValues(oldState),
+                oldState,
+                newState,
                 NBT
         ));
     }
@@ -70,10 +56,8 @@ public class BlockInteraction extends TimestampedPositionalEntry {
                 source,
                 playerID,
                 action,
-                EventsUtil.blockType(newState.getBlock()),
-                getValues(newState),
-                EventsUtil.blockType(oldState.getBlock()),
-                getValues(oldState),
+                oldState,
+                newState,
                 NBT
         ));
     }
@@ -112,18 +96,18 @@ public class BlockInteraction extends TimestampedPositionalEntry {
                 stmt.setNull(7, java.sql.Types.INTEGER);
             }//player
             stmt.setInt(8, CommonOperations.getOrCreateId_EntityAction(action,connection));//action
-            int blockID = CommonOperations.getOrCreateId_Block(block_new,connection);
+            int blockID = CommonOperations.getOrCreateId_Block(_new.block(), connection);
             stmt.setInt(9, blockID);//b new
-            if(state_new != null){
-                stmt.setInt(10, CommonOperations.getOrCreateId_State(state_new, blockID, connection));//s new
+            if(_new.state() != null){
+                stmt.setInt(10, CommonOperations.getOrCreateId_State(_new.state(), blockID, connection));//s new
             } else {
                 stmt.setNull(10, java.sql.Types.INTEGER);
             }
 
-            blockID = CommonOperations.getOrCreateId_Block(block_old,connection);
+            blockID = CommonOperations.getOrCreateId_Block(_old.block(),connection);
             stmt.setInt(11, blockID);//b old
-            if(state_old != null){
-                stmt.setInt(12, CommonOperations.getOrCreateId_State(state_old, blockID, connection));//s old
+            if(_old.state() != null){
+                stmt.setInt(12, CommonOperations.getOrCreateId_State(_old.state(), blockID, connection));//s old
             } else {
                 stmt.setNull(12, java.sql.Types.INTEGER);
             }
