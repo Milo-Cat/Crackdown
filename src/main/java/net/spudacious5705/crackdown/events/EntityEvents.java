@@ -38,14 +38,14 @@ public class EntityEvents {
         }
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onAttacked(LivingAttackEvent event) {
         damagingEvent("ATTACKED",
                 event.getEntity(),
                 event.getSource(),
                 event.getAmount()
         );
-    }
+    }*/
 
     @SubscribeEvent
     public static void onKilled(LivingDeathEvent event) {
@@ -84,11 +84,6 @@ public class EntityEvents {
             }
             EntityInteraction.log(pos,dimension,entityUUID,entityType,source,action,damageInfo);
         }
-    }
-
-    @SubscribeEvent
-    public static void onDestroyBlock(LivingDestroyBlockEvent event) {
-        event.getEntity();
     }
 
     @SubscribeEvent
