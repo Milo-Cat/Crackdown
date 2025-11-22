@@ -105,7 +105,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
         } catch (SQLException e) {
             throw new RuntimeException("[CRACKDOWN] Failed to prepare insert statement for entity_interaction", e);
         }
-        if(Objects.equals(action, "KILLED")){
+        if(Objects.equals(action, "REMOVED")||Objects.equals(action, "REPLACED")){
             try {
                 PreparedStatement stmt = connection.prepareStatement(
                         """

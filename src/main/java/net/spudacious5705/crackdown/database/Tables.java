@@ -100,7 +100,9 @@ public enum Tables {
             type INTEGER NOT NULL,
             created_at INTEGER NOT NULL,
             destroyed_at INTEGER,
-            last_backup_check_at INTEGER NOT NULL,
+            last_backup_check_at INTEGER,
+            last_backup_id INTEGER,
+            FOREIGN KEY (last_backup_id) REFERENCES block_backup_record(id),
             FOREIGN KEY (type) REFERENCES block_entity_type(id),
             FOREIGN KEY (dimension) REFERENCES dimension(id)
             """),
@@ -177,7 +179,9 @@ public enum Tables {
             type INTEGER NOT NULL,
             created_at INTEGER NOT NULL,
             killed_at INTEGER,
-            last_backup_check_at INTEGER NOT NULL,
+            last_backup_check_at INTEGER,
+            last_backup_id INTEGER,
+            FOREIGN KEY (last_backup_id) REFERENCES entity_backup_record(id),
             FOREIGN KEY (type) REFERENCES entity_type(id)
             """),
 
