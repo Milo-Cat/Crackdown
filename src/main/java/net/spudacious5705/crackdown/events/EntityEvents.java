@@ -51,12 +51,11 @@ public class EntityEvents {
     public static void onKilled(LivingDeathEvent event) {
         damagingEvent("KILLED",
                 event.getEntity(),
-                event.getSource(),
-                0
+                event.getSource()
         );
     }
 
-    static void damagingEvent(String action, Entity victimEntity, DamageSource damageSource, float damageQuantity){
+    static void damagingEvent(String action, Entity victimEntity, DamageSource damageSource){
         if(victimEntity == null || victimEntity instanceof ItemEntity)return;
 
         Entity attackerEntity = damageSource.getEntity();
@@ -70,19 +69,15 @@ public class EntityEvents {
         UUID entityUUID = victimEntity.getUUID();
         String entityType = EventsUtil.entityType(victimEntity);
         String source = damageSource.type().msgId();
-        String damageInfo = "{\"damage_amount\": " + damageQuantity;
 
 
         if(attackerEntity instanceof ServerPlayer player){
             int playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
-            EntityInteraction.log(pos,dimension,entityUUID, entityType, source, playerID, action,damageInfo+"}");
+            EntityInteraction.log(pos,dimension,entityUUID, entityType, source, playerID, action,null);
         } else {
-            if(attackerEntity != null) {
-                damageInfo = damageInfo + ", \"attacker_entity\": \""+entityType+"\"}";
-            } else {
-                damageInfo = damageInfo + "}";
-            }
-            EntityInteraction.log(pos,dimension,entityUUID,entityType,source,action,damageInfo);
+            EntityInteraction.log(pos,dimension,entityUUID,entityType,source,action,
+                    attackerEntity != null ? "{\"attacker_entity\": \""+entityType+"\"}" : null
+            );
         }
     }
 
