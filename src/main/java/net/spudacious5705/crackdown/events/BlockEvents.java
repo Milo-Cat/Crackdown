@@ -114,27 +114,27 @@ public class BlockEvents {
             final int[] y = new int[size];
             final int[] z = new int[size];
 
+            int ptr = 0;
 
+            for (BlockPos pos : positions) {
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() != Blocks.AIR) {
+                    Matcher matcher = pattern.matcher(state.toString());
 
-            for (int i = 0; i < positions.size(); i++) {
-                BlockPos pos = positions.get(i);
-
-                Matcher matcher = pattern.matcher(level.getBlockState(pos).toString());
-
-                if (matcher.matches()) {
-                    //group 1 is usually just "Block". and is always block for blockState
-                    int bar = i;
-                    blocks[bar] = matcher.group(2); // inside ()
-                    states[bar] = matcher.group(3); // inside []
-                    x[bar] = pos.getX();
-                    y[bar] = pos.getY();
-                    z[bar] = pos.getZ();
+                    if (matcher.matches()) {
+                        //group 1 is usually just "Block". and is always block for blockState
+                        blocks[ptr] = matcher.group(2); // inside ()
+                        states[ptr] = matcher.group(3); // inside []
+                        x[ptr] = pos.getX();
+                        y[ptr] = pos.getY();
+                        z[ptr] = pos.getZ();
+                    }
+                    ptr++;
                 }
-                i++;
 
             }
 
-            new BlocksExploded(timestamp,dimension,size, blocks, states, x,y,z);
+            new BlocksExploded(timestamp,dimension,ptr, blocks, states, x,y,z);
         }
     }
 }
