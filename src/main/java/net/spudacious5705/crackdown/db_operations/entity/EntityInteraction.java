@@ -151,7 +151,7 @@ public class EntityInteraction extends TimestampedPositionalEntry {
                 stmt.setInt(2, entityID);
                 stmt.executeUpdate();
             } catch (SQLException e) {
-                throw new RuntimeException("[CRACKDOWN] Failed to prepare update statement for entity_interaction", e);
+                throw new RuntimeException("[CRACKDOWN] Failed to prepare update statement for entity", e);
             }
         }
     }
