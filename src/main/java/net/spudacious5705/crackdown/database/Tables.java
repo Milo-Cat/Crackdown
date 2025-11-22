@@ -143,10 +143,8 @@ public enum Tables {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             block_entity INTEGER NOT NULL,
             created_at INTEGER NOT NULL,
-            compression INTEGER NOT NULL,
             checksum TEXT NOT NULL,
-            FOREIGN KEY (block_entity) REFERENCES block_entity(id),
-            FOREIGN KEY (compression) REFERENCES compression_type(id)
+            FOREIGN KEY (block_entity) REFERENCES block_entity(id)
             """),
 
     BLOCK_ENTITY_BLOB(
@@ -212,9 +210,7 @@ public enum Tables {
             entity INTEGER NOT NULL,
             created_at INTEGER NOT NULL,
             checksum TEXT NOT NULL,
-            compression INTEGER NOT NULL,
-            FOREIGN KEY (entity) REFERENCES entity(id),
-            FOREIGN KEY (compression) REFERENCES compression_type(id)
+            FOREIGN KEY (entity) REFERENCES entity(id)
             """),
 
     ENTITY_BLOB(
@@ -223,15 +219,6 @@ public enum Tables {
             record INTEGER PRIMARY KEY,
             data BLOB NOT NULL,
             FOREIGN KEY (record) REFERENCES entity_backup_record(id) ON DELETE CASCADE
-            """),
-
-    COMPRESSION_TYPE(
-            "compression_type",
-            """
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            version TEXT NOT NULL,
-            UNIQUE(name,version)
             """);
 
     final String SQL;
