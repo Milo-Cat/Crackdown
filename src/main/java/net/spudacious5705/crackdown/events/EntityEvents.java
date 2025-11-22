@@ -16,6 +16,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
+import net.spudacious5705.crackdown.events.listeners.EntityRideTracker;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
 import java.util.UUID;
@@ -76,25 +77,38 @@ public class EntityEvents {
             EntityInteraction.log(pos,dimension,entityUUID, entityType, source, playerID, action,null);
         } else {
             EntityInteraction.log(pos,dimension,entityUUID,entityType,source,action,
-                    attackerEntity != null ? "{\"attacker_entity\": \""+entityType+"\"}" : null
+                    attackerEntity != null ? "{\"attacker_entity\": \""+EventsUtil.entityType(attackerEntity)+"\"}" : null
             );
         }
     }
 
     @SubscribeEvent
     public static void onMount(EntityMountEvent event) {
-        event.getEntity();
+        if(event.getEntityMounting() instanceof ServerPlayer player) {
+            if(event.isMounting()) {
+                Entity entity = event.getEntityBeingMounted();
+                if (entity != null) {
+                    new EntityRideTracker<>(entity, player);//start tracker
+                }
+            }
+        }
     }
 
     @SubscribeEvent
     public static void onInteractEntity(PlayerInteractEvent.EntityInteractSpecific event) {
-        event.getEntity();//player
-        event.getTarget();//entity
-        event.getLocalPos();
-        if(event.getTarget() instanceof ContainerEntity c){
-            event.getTarget();
-
-        }
+        int playerID = GetDatabaseIdFunc.getDatabaseID(event.getEntity());
+        Entity entity = event.getTarget();//entity
+        event.getLevel();
+        EntityInteraction.log(
+                entity.blockPosition(),
+                EventsUtil.DimensionName(event.getLevel()),
+                entity.getUUID(),
+                EventsUtil.entityType(entity),
+                "player",
+                playerID,
+                "INTERACT",
+                null
+        );
     }
 
     @SubscribeEvent
