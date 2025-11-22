@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.entity.living.LivingDestroyBlockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -21,6 +22,7 @@ import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
+import java.util.AbstractCollection;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -85,10 +87,44 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockMultiPlace(BlockEvent.EntityMultiPlaceEvent event) {
+        if(event.getLevel() instanceof ServerLevel level){
+            String dimension = EventsUtil.DimensionName(level);
+
+            for(BlockSnapshot blockSnapshot: event.getReplacedBlockSnapshots()) {
+                String nbt = null;
+                if (blockSnapshot.getReplacedBlock().hasBlockEntity()) {
+                    BlockEntity be = blockSnapshot.getBlockEntity();
+                    if (be != null) {
+                        nbt = be.serializeNBT().toString();
+                    }
+                }
+
+                String action;
+                if(blockSnapshot.getReplacedBlock().getBlock() == Blocks.AIR){
+                    action = "PLACE";
+                } else if (blockSnapshot.getCurrentBlock().getBlock() == Blocks.AIR) {
+                    action = "BREAK";
+                } else {
+                    action = "REPLACE";
+                }
+
+                BlockInteraction.logPlayerInteraction(
+                        event.getPos(),
+                        dimension,
+                        event.getEntity() instanceof ServerPlayer player ? ((GetDatabaseIdFunc) player).crackdown$getDatabaseID() : -1,
+                        blockSnapshot.getCurrentBlock(),
+                        blockSnapshot.getReplacedBlock(),
+                        action,
+                        nbt);
+            }
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFluidPlaceBlock(BlockEvent.FluidPlaceBlockEvent event) {//useful for lavacasts?
+        if(event.getLevel() instanceof ServerLevel level){
+            BlockInteraction.logInteraction(event.getPos(),EventsUtil.DimensionName(level),"fluid",-1,event.getNewState(),event.getOriginalState(),"FLUID_PLACE",null);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -142,8 +178,19 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onTrample(BlockEvent.FarmlandTrampleEvent event) {
-        event.getEntity();//player
-        event.getPos();//pos
+        if(event.getLevel() instanceof ServerLevel level){
+            BlockState state = level.getBlockState(event.getPos());
+            int playerID;
+            String source;
+            if(event.getEntity() instanceof ServerPlayer player){
+                playerID = GetDatabaseIdFunc.getDatabaseID(player);
+                source = "player";
+            } else {
+                playerID = -1;
+                source = EventsUtil.entityType(event.getEntity());
+            }
+            BlockInteraction.logInteraction(event.getPos(),EventsUtil.DimensionName(level),source,playerID,null,state,"TRAMPLE",null);
+        }
     }
 
 
