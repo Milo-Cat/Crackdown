@@ -14,8 +14,8 @@ public class PlayerDatabaseIDmixin implements GetDatabaseIdFunc {
 
     @Override
     public synchronized int crackdown$getDatabaseID() {
-        if(crackdown$databaseID < 0){
-            crackdown$databaseID = getOrCreateId_Player((ServerPlayer)(Object)this);
+        if (crackdown$databaseID < 0) {
+            crackdown$databaseID = getOrCreateId_Player((ServerPlayer) (Object) this);
         }
         return crackdown$databaseID;
     }

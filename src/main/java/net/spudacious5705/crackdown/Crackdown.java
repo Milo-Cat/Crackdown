@@ -1,7 +1,6 @@
 package net.spudacious5705.crackdown;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -25,12 +24,7 @@ public class Crackdown {
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static void report(String r){
-        LOGGER.info("BREAK CAUSED BY {}",r);
-    }
-
     public Crackdown() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> CrackdownClient::init);
 
@@ -39,6 +33,9 @@ public class Crackdown {
 
     }
 
+    public static void report(String r) {
+        LOGGER.info("BREAK CAUSED BY {}", r);
+    }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent

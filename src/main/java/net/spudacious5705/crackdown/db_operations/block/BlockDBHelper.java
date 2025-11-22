@@ -8,19 +8,6 @@ import java.util.regex.Pattern;
 
 public interface BlockDBHelper {
     Pattern pattern = Pattern.compile("([^\\{]+)\\{([^\\}]+)\\}(?:\\[([^]]+)])?");
-    static AffectedBlock CreateAffectedBlock(BlockPos pos, BlockState state) {
-
-        BlockStateString s = getBlockStateAsString(state);
-
-        return new AffectedBlock(
-                pos.getX(),
-                pos.getY(),
-                pos.getZ(),
-                s.block,
-                s.state
-        );
-
-    }
 
     static BlockStateString getBlockStateAsString(BlockState state) {
 
@@ -41,7 +28,6 @@ public interface BlockDBHelper {
 
     }
 
-    record AffectedBlock(int x, int y, int z, String block, String state){}
-
-    record BlockStateString(String block, String state){}
+    record BlockStateString(String block, String state) {
+    }
 }

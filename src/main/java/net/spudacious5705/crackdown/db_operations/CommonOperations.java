@@ -8,9 +8,9 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.block_entity.GetOrCreateBlockEntityID;
 import net.spudacious5705.crackdown.db_operations.player.GetOrCreatePlayerID;
-import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.events.EventsUtil;
 
 import java.sql.*;
@@ -24,69 +24,68 @@ import java.util.concurrent.ExecutionException;
 public class CommonOperations {
 
     // Caches
-    private static final Map<String,Integer> DIMENSION_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> BLOCK_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> SOURCE_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> BLOCK_ACTION_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> BLOCK_ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> BLOCK_ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> ENTITY_ID_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> COMPRESSION_TYPE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> DIMENSION_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> BLOCK_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> SOURCE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> BLOCK_ACTION_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> BLOCK_ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> BLOCK_ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> ENTITY_ID_CACHE = new ConcurrentHashMap<>();
 
     // Dimension
     public static int getOrCreateId_Dimension(String name, Connection connection) {
         return DIMENSION_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("dimension","name",n, connection));
+                n -> getOrCreateResourceId("dimension", "name", n, connection));
     }
 
     // block
     public static int getOrCreateId_Block(String name, Connection connection) {
         return BLOCK_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("block","name",n, connection));
+                n -> getOrCreateResourceId("block", "name", n, connection));
     }
 
     // Source
     public static int getOrCreateId_Source(String name, Connection connection) {
         return SOURCE_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("source","type",n, connection));
+                n -> getOrCreateResourceId("source", "type", n, connection));
     }
 
     // block Action
     public static int getOrCreateId_BlockAction(String name, Connection connection) {
         return BLOCK_ACTION_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("block_action_types","action",n, connection));
+                n -> getOrCreateResourceId("block_action_types", "action", n, connection));
     }
 
     // block entity
     public static int getOrCreateId_BlockEntityType(String name, Connection connection) {
         return BLOCK_ENTITY_TYPE_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("block_entity_type","name",n, connection));
+                n -> getOrCreateResourceId("block_entity_type", "name", n, connection));
     }
 
     // block entity Action
     public static int getOrCreateId_BlockEntityAction(String name, Connection connection) {
         return BLOCK_ENTITY_ACTION_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("block_entity_action_types","action",n, connection));
+                n -> getOrCreateResourceId("block_entity_action_types", "action", n, connection));
     }
 
     // entity Action
     public static int getOrCreateId_EntityAction(String name, Connection connection) {
         return ENTITY_ACTION_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("entity_action_types","action",n, connection));
+                n -> getOrCreateResourceId("entity_action_types", "action", n, connection));
     }
 
     // entity
     public static int getOrCreateId_EntityType(String name, Connection connection) {
         return ENTITY_TYPE_CACHE.computeIfAbsent(name,
-                n -> getOrCreateResourceId("entity_type","name",n, connection));
+                n -> getOrCreateResourceId("entity_type", "name", n, connection));
     }
 
     // Generic DB call
-    private static int getOrCreateResourceId(String table, String column_name, String resource_name, Connection connection){
+    private static int getOrCreateResourceId(String table, String column_name, String resource_name, Connection connection) {
 
-        String selectSql = "SELECT id FROM " + table + " WHERE "+column_name+" = ?";
+        String selectSql = "SELECT id FROM " + table + " WHERE " + column_name + " = ?";
         try (PreparedStatement select = connection.prepareStatement(selectSql)) {
             select.setString(1, resource_name);
             try (ResultSet rs = select.executeQuery()) {
@@ -99,7 +98,7 @@ public class CommonOperations {
         }
 
         // ITEM NOT FOUND, GENERATING NEW ENTRY
-        String insertSql = "INSERT INTO " + table + "("+column_name+") VALUES (?)";
+        String insertSql = "INSERT INTO " + table + "(" + column_name + ") VALUES (?)";
         try (PreparedStatement insert = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             insert.setString(1, resource_name);
             insert.executeUpdate();
@@ -184,7 +183,7 @@ public class CommonOperations {
 
 
     public static int GetOrCreateEntityID(Connection connection, String uuid, String type, boolean findDeceased) {
-        return ENTITY_ID_CACHE.computeIfAbsent(type+uuid,
+        return ENTITY_ID_CACHE.computeIfAbsent(type + uuid,
                 n -> {
 
                     try {
@@ -209,7 +208,7 @@ public class CommonOperations {
 
                                     rs.getInt("killed_at");
 
-                                    if (!rs.wasNull()||findDeceased) {
+                                    if (!rs.wasNull() || findDeceased) {
                                         continue;//Found entity is Deceased
                                     }
 
@@ -282,9 +281,9 @@ public class CommonOperations {
         final String trueName = serverPlayer.getName().getString();
         final CompletableFuture<Integer> future = new CompletableFuture<>();
 
-        DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName,uuid.toString(), future));
+        DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName, uuid.toString(), future));
 
-        try{
+        try {
             return future.get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -301,9 +300,9 @@ public class CommonOperations {
         final String type = EventsUtil.blockEntityType(blockEntity);
         final CompletableFuture<Integer> future = new CompletableFuture<>();
 
-        DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos,dimension,type, future));
+        DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos, dimension, type, future));
 
-        try{
+        try {
             return future.get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);

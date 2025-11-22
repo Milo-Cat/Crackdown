@@ -1,9 +1,9 @@
 package net.spudacious5705.crackdown.db_operations.block_entity;
 
 import net.minecraft.core.BlockPos;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
-import net.spudacious5705.crackdown.database.DatabaseManager;
 
 import java.sql.*;
 import java.util.concurrent.CompletableFuture;
@@ -34,13 +34,13 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
 
             try (PreparedStatement statement = connection.prepareStatement(
                     """
-                    SELECT id, type, destroyed_at, last_backup_check_at
-                    FROM block_entity
-                    WHERE dimension = ?
-                      AND x = ?
-                      AND y = ?
-                      AND z = ?;
-                    """)
+                            SELECT id, type, destroyed_at, last_backup_check_at
+                            FROM block_entity
+                            WHERE dimension = ?
+                              AND x = ?
+                              AND y = ?
+                              AND z = ?;
+                            """)
             ) {
                 statement.setInt(1, dimensionID);
                 statement.setInt(2, pos.getX());
@@ -56,11 +56,11 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
 
                         rs.getInt("destroyed_at");
 
-                        if(!rs.wasNull()){
+                        if (!rs.wasNull()) {
                             continue;//Found block entity was destroyed
                         }
 
-                        if(currentType != storedType){
+                        if (currentType != storedType) {
                             continue;//Found block entity was not of this type
                         }
 
@@ -68,9 +68,9 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
 
                         long lastBackupTime = rs.getLong("last_backup_check_at");
 
-                        if(!rs.wasNull()){
+                        if (!rs.wasNull()) {
                             //backup immediately
-                        } else if(lastBackupTime==0) {//todo check backup time
+                        } else if (lastBackupTime == 0) {//todo check backup time
                             //backup
                         }
 

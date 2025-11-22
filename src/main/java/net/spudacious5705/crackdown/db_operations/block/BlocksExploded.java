@@ -1,8 +1,8 @@
 package net.spudacious5705.crackdown.db_operations.block;
 
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
-import net.spudacious5705.crackdown.database.DatabaseManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

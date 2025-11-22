@@ -2,21 +2,20 @@ package net.spudacious5705.crackdown.events;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.ServerboundKeepAlivePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
-import net.minecraftforge.event.entity.living.*;
+import net.minecraftforge.event.entity.living.AnimalTameEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
+import net.spudacious5705.crackdown.db_operations.entity.EntityBackup;
 import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
 import net.spudacious5705.crackdown.events.listeners.EntityRideTracker;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
@@ -29,15 +28,15 @@ public class EntityEvents {
     @SubscribeEvent
     public static void onTamed(AnimalTameEvent event) {
 
-        if(event.getTamer() instanceof ServerPlayer player){
+        if (event.getTamer() instanceof ServerPlayer player) {
             Animal pet = event.getAnimal();
             String dimension = EventsUtil.DimensionName(player.level());
             BlockPos pos = EventsUtil.copyBlockPos(pet.blockPosition());
             UUID petUUID = pet.getUUID();
             String petType = EventsUtil.entityType(pet);
-            int playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
+            int playerID = ((GetDatabaseIdFunc) player).crackdown$getDatabaseID();
 
-            EntityInteraction.log(pos,dimension,petUUID, petType, "player",playerID,"TAME",null);
+            EntityInteraction.log(pos, dimension, petUUID, petType, "player", playerID, "TAME", null);
         }
     }
 
@@ -52,14 +51,11 @@ public class EntityEvents {
 
     @SubscribeEvent
     public static void onKilled(LivingDeathEvent event) {
-        damagingEvent("KILLED",
-                event.getEntity(),
-                event.getSource()
-        );
-    }
 
-    static void damagingEvent(String action, Entity victimEntity, DamageSource damageSource){
-        if(victimEntity == null || victimEntity instanceof ItemEntity)return;
+        Entity victimEntity = event.getEntity();
+        DamageSource damageSource = event.getSource();
+
+        if (victimEntity == null) return;
 
         Entity attackerEntity = damageSource.getEntity();
 
@@ -74,20 +70,20 @@ public class EntityEvents {
         String source = damageSource.type().msgId();
 
 
-        if(attackerEntity instanceof ServerPlayer player){
-            int playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
-            EntityInteraction.log(pos,dimension,entityUUID, entityType, source, playerID, action,null);
+        if (attackerEntity instanceof ServerPlayer player) {
+            int playerID = ((GetDatabaseIdFunc) player).crackdown$getDatabaseID();
+            EntityInteraction.log(pos, dimension, entityUUID, entityType, source, playerID, "KILLED", null);
         } else {
-            EntityInteraction.log(pos,dimension,entityUUID,entityType,source,action,
-                    attackerEntity != null ? "{\"attacker_entity\": \""+EventsUtil.entityType(attackerEntity)+"\"}" : null
+            EntityInteraction.log(pos, dimension, entityUUID, entityType, source, "KILLED",
+                    attackerEntity != null ? "{\"attacker_entity\": \"" + EventsUtil.entityType(attackerEntity) + "\"}" : null
             );
         }
     }
 
     @SubscribeEvent
     public static void onMount(EntityMountEvent event) {
-        if(event.getEntityMounting() instanceof ServerPlayer player) {
-            if(event.isMounting()) {
+        if (event.getEntityMounting() instanceof ServerPlayer player) {
+            if (event.isMounting()) {
                 Entity entity = event.getEntityBeingMounted();
                 if (entity != null) {
                     new EntityRideTracker<>(entity, player);//start tracker
@@ -101,17 +97,18 @@ public class EntityEvents {
         int playerID = GetDatabaseIdFunc.getDatabaseID(event.getEntity());
         Entity entity = event.getTarget();//entity
 
-        if(event.getLevel() instanceof ServerLevel level) {
+        if (event.getLevel() instanceof ServerLevel level) {
             CompoundTag tagSnapshot = entity.serializeNBT();
             //execute at end of tick
             level.getServer().execute(() -> checkInteraction(level, playerID, entity, tagSnapshot));
         }
     }
 
-    private static void checkInteraction(ServerLevel level, int playerID, Entity entity, CompoundTag tagSnapshot){
-        CompoundTag diff = EventsUtil.findDifference(entity.serializeNBT(), tagSnapshot);
+    private static void checkInteraction(ServerLevel level, int playerID, Entity entity, CompoundTag tagSnapshot) {
+        CompoundTag newSnapshot = entity.serializeNBT();
+        CompoundTag diff = EventsUtil.findDifference(newSnapshot, tagSnapshot);
         String info = diff.toString();//todo OFFLOAD difference finding to 3rd thread
-
+        EntityBackup.save(entity,newSnapshot, false);
         EntityInteraction.log(
                 entity.blockPosition(),
                 EventsUtil.DimensionName(level),

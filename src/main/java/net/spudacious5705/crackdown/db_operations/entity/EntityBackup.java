@@ -2,33 +2,38 @@ package net.spudacious5705.crackdown.db_operations.entity;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.world.entity.Entity;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
+import net.spudacious5705.crackdown.events.EventsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.rowset.serial.SerialBlob;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.util.UUID;
 
 public class EntityBackup extends TimestampedEntry {
-    final int entityID;
+    final String entityUUID;
+    final String entityType;
     final CompoundTag data;
     final boolean forceBackup;
 
-    protected EntityBackup(int entityID, CompoundTag data, boolean forceBackup) {
-        this.entityID = entityID;
+    protected EntityBackup(UUID entityUUID, String entityType, CompoundTag data, boolean forceBackup) {
+        this.entityUUID = entityUUID.toString();
+        this.entityType = entityType;
         this.data = data;
         this.forceBackup = forceBackup;
     }
 
 
-
-    public static void save(int ID, @NotNull CompoundTag data, boolean force) {
+    public static void save(Entity entity, @NotNull CompoundTag data, boolean force) {
         DatabaseManager.queueEntry(new EntityBackup(
-                ID,
+                entity.getUUID(),
+                EventsUtil.entityType(entity),
                 data,
                 force
         ));
@@ -39,17 +44,19 @@ public class EntityBackup extends TimestampedEntry {
     public void accept(Connection connection) {
         long lastBackup;
         int lastBackupID;
+        int entityID = CommonOperations.GetOrCreateEntityID(connection,entityUUID,entityType,false);
         try {
+
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    SELECT last_backup_check_at, last_backup_id
-                    FROM entity
-                    WHERE id=?
-                    """
+                            SELECT last_backup_check_at, last_backup_id
+                            FROM entity
+                            WHERE id=?
+                            """
             );
             stmt.setInt(1, entityID);
             ResultSet rs = stmt.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 lastBackup = rs.getLong("last_backup_check_at");
                 lastBackupID = rs.getInt("last_backup_id");
             } else {
@@ -60,7 +67,7 @@ public class EntityBackup extends TimestampedEntry {
             throw new RuntimeException("[CRACKDOWN] Failed to find entity by ID", e);
         }
 
-        if(!forceBackup && lastBackup+3600 > timestamp){
+        if (!forceBackup && lastBackup + 3600 > timestamp) {
             return;//too soon for hourly backup
         }
 
@@ -68,14 +75,14 @@ public class EntityBackup extends TimestampedEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    SELECT checksum
-                    FROM entity_backup_record
-                    WHERE id=?
-                    """
+                            SELECT checksum
+                            FROM entity_backup_record
+                            WHERE id=?
+                            """
             );
             stmt.setInt(1, lastBackupID);
             ResultSet rs = stmt.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 oldChecksum = rs.getBytes("checksum");
             } else {
                 throw new SQLException("[CRACKDOWN] Failed to find entity by ID");
@@ -95,15 +102,15 @@ public class EntityBackup extends TimestampedEntry {
         byte[] raw = stream.toByteArray();
         byte[] checksum = BackupUtil.checksum(raw);
 
-        if(BackupUtil.compareChecksums(oldChecksum,checksum)){
+        if (BackupUtil.compareChecksums(oldChecksum, checksum)) {
             //checksum matches. Update lastCheckedTime
             try {
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                        UPDATE entity
-                        SET last_backup_check_at = ?
-                        WHERE id = ?
-                        """
+                                UPDATE entity
+                                SET last_backup_check_at = ?
+                                WHERE id = ?
+                                """
                 );
                 stmt.setLong(1, timestamp);
                 stmt.setInt(2, entityID);
@@ -126,18 +133,18 @@ public class EntityBackup extends TimestampedEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    INSERT INTO entity_backup_record(
-                    entity,
-                    created_at,
-                    compression,
-                    checksum
-                    ) VALUES (?, ?, ?, ?)
-                    """
+                            INSERT INTO entity_backup_record(
+                            entity,
+                            created_at,
+                            compression,
+                            checksum
+                            ) VALUES (?, ?, ?, ?)
+                            """
             );
             stmt.setInt(1, entityID);
             stmt.setLong(2, timestamp);
-            stmt.setInt(3, CommonOperations.getOrCreateId_Compression("DEFAULT","0", connection));
-            stmt.setBytes(4,checksum);
+            stmt.setInt(3, CommonOperations.getOrCreateId_Compression("DEFAULT", "0", connection));
+            stmt.setBytes(4, checksum);
             stmt.executeUpdate();
             try (ResultSet keys = stmt.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -148,11 +155,11 @@ public class EntityBackup extends TimestampedEntry {
             }
             stmt = connection.prepareStatement(
                     """
-                    INSERT INTO entity_nbt_blob(
-                    record,
-                    data
-                    ) VALUES (?, ?)
-                    """
+                            INSERT INTO entity_nbt_blob(
+                            record,
+                            data
+                            ) VALUES (?, ?)
+                            """
             );
             stmt.setInt(1, recordID);
             stmt.setBlob(2, blob);

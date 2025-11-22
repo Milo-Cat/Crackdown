@@ -18,9 +18,9 @@ public abstract class LevelMixin {
     public abstract BlockState getBlockState(BlockPos p_46732_);
 
     @Inject(method = "removeBlock", at = @At("TAIL"))
-    void f(BlockPos pos, boolean moved, CallbackInfoReturnable<Boolean> cir){
-        if(!moved){
-            BlockInteraction.logPhysicsRemoved(pos, getBlockState(pos), EventsUtil.DimensionName((Level)(Object)this));
+    void f(BlockPos pos, boolean moved, CallbackInfoReturnable<Boolean> cir) {
+        if (!moved) {
+            BlockInteraction.logPhysicsRemoved(pos, getBlockState(pos), EventsUtil.DimensionName((Level) (Object) this));
         }
     }
 

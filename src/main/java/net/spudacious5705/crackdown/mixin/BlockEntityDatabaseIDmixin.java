@@ -18,14 +18,14 @@ public class BlockEntityDatabaseIDmixin implements GetDatabaseIdFunc {
 
     @Override
     public synchronized int crackdown$getDatabaseID() {
-        if(crackdown$databaseID < 0){
-            crackdown$databaseID = getOrCreateId_BlockEntity((BlockEntity)(Object)this);
+        if (crackdown$databaseID < 0) {
+            crackdown$databaseID = getOrCreateId_BlockEntity((BlockEntity) (Object) this);
         }
         return crackdown$databaseID;
     }
 
     @Inject(method = "load", at = @At("TAIL"))
-    void f(CompoundTag p_155245_, CallbackInfo ci){
+    void f(CompoundTag p_155245_, CallbackInfo ci) {
         crackdown$getDatabaseID();
     }
 

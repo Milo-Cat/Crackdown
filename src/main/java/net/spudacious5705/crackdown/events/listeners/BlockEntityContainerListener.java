@@ -29,12 +29,12 @@ public class BlockEntityContainerListener extends CrackdownContainerListener {
 
     @Override
     void logItemSwap(int slotIndex, ItemStack now, ItemStack old) {
-        BlockEntityInteraction.logItemSwap(slotIndex,blockEntityID,playerDBID,now,old);
+        BlockEntityInteraction.logItemSwap(slotIndex, blockEntityID, playerDBID, now, old);
     }
 
     @Override
     void logItemCountChange(int slotIndex, ItemStackChangeType itemStackChangeType, int count, ItemStack now) {
-        BlockEntityInteraction.logItemCountChange(slotIndex,itemStackChangeType, count, blockEntityID, playerDBID, now);
+        BlockEntityInteraction.logItemCountChange(slotIndex, itemStackChangeType, count, blockEntityID, playerDBID, now);
     }
 
     @Override

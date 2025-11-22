@@ -16,9 +16,11 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class EntityRideTracker<T extends Entity> {
 
+    private static final List<EntityRideTracker<?>> trackers = new ArrayList<>();
+    static int globalTimer = 0;
+    int timer = 0;
     private T entity;
     private String entityType;
-
 
     public EntityRideTracker(T entity, ServerPlayer player) {
         this.entity = entity;
@@ -27,7 +29,6 @@ public class EntityRideTracker<T extends Entity> {
         trackers.add(this);
     }
 
-    static int globalTimer = 0;
     @SubscribeEvent
     public static void tickAllTrackers(TickEvent.ServerTickEvent event) {
         if (++globalTimer % 20 == 0) {
@@ -35,18 +36,15 @@ public class EntityRideTracker<T extends Entity> {
         }
     }
 
-    private static final List<EntityRideTracker<?>> trackers = new ArrayList<>();
-
-    int timer = 0;
-    private boolean tick(){
+    private boolean tick() {
         if (++timer % 4 == 0) {
             return updateTracker();
         }
         return false;//DON'T REMOVE
     }
 
-    private boolean updateTracker(){
-        if(entity.isVehicle() && entity.getControllingPassenger() instanceof ServerPlayer player){
+    private boolean updateTracker() {
+        if (entity.isVehicle() && entity.getControllingPassenger() instanceof ServerPlayer player) {
             log("RIDE", GetDatabaseIdFunc.getDatabaseID(player));
             return false;
         }
@@ -56,7 +54,7 @@ public class EntityRideTracker<T extends Entity> {
         return true;//should remove
     }
 
-    private void log(String action, int playerID){
-        EntityInteraction.log(entity.blockPosition(), EventsUtil.DimensionName(entity.level()),entity.getUUID(), entityType, "player", playerID, action, null);
+    private void log(String action, int playerID) {
+        EntityInteraction.log(entity.blockPosition(), EventsUtil.DimensionName(entity.level()), entity.getUUID(), entityType, "player", playerID, action, null);
     }
 }

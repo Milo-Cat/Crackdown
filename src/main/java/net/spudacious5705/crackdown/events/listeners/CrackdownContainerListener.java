@@ -14,13 +14,13 @@ public abstract class CrackdownContainerListener implements ContainerListener {
     final ItemStack[] snapshot;
 
     public CrackdownContainerListener(@NotNull ServerPlayer player, @NotNull ItemStack[] snapshot, int trackArraySize) {
-        this.playerDBID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
+        this.playerDBID = ((GetDatabaseIdFunc) player).crackdown$getDatabaseID();
         this.isTracked = new boolean[trackArraySize];
         this.snapshot = snapshot;
     }
 
-    public void track(int i){
-        isTracked[i]=true;
+    public void track(int i) {
+        isTracked[i] = true;
     }
 
     @Override
@@ -31,7 +31,7 @@ public abstract class CrackdownContainerListener implements ContainerListener {
             ItemStack now = menu.slots.get(slotIndex).getItem().copy();
 
             if (now == ItemStack.EMPTY) {
-                if (old != ItemStack.EMPTY){
+                if (old != ItemStack.EMPTY) {
                     //ALL Items REMOVED!
                     logItemCountChange(slotIndex, ItemStackChangeType.REMOVED, old.getCount(), old);
                 }

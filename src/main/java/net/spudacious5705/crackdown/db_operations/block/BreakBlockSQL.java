@@ -16,8 +16,8 @@ public class BreakBlockSQL extends TimestampedPositionalEntry {
 
     protected BreakBlockSQL(BlockPos pos, String dimension, @Nullable Player player) {
         super(pos, dimension);
-        if(player != null){
-            playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
+        if (player != null) {
+            playerID = ((GetDatabaseIdFunc) player).crackdown$getDatabaseID();
         } else {
             playerID = -1;
         }
@@ -28,22 +28,22 @@ public class BreakBlockSQL extends TimestampedPositionalEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    INSERT INTO block_interaction (
-                    timestamp,
-                    x,
-                    y,
-                    z,
-                    dimension,
-                    source,
-                    player,
-                    action,
-                    block_new,
-                    state_new,
-                    block_old,
-                    state_old,
-                    nbt
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """
+                            INSERT INTO block_interaction (
+                            timestamp,
+                            x,
+                            y,
+                            z,
+                            dimension,
+                            source,
+                            player,
+                            action,
+                            block_new,
+                            state_new,
+                            block_old,
+                            state_old,
+                            nbt
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """
             );
             stmt.setLong(1, timestamp);
             stmt.setInt(2, blockPos.getX());

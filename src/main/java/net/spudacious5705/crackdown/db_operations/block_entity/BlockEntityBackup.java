@@ -2,13 +2,10 @@ package net.spudacious5705.crackdown.db_operations.block_entity;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
-import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -28,7 +25,6 @@ public class BlockEntityBackup extends TimestampedEntry {
     }
 
 
-
     public static void save(int ID, @NotNull CompoundTag data, boolean force) {
         DatabaseManager.queueEntry(new BlockEntityBackup(
                 ID,
@@ -45,14 +41,14 @@ public class BlockEntityBackup extends TimestampedEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    SELECT last_backup_check_at, last_backup_id
-                    FROM block_entity
-                    WHERE id=?
-                    """
+                            SELECT last_backup_check_at, last_backup_id
+                            FROM block_entity
+                            WHERE id=?
+                            """
             );
             stmt.setInt(1, thisID);
             ResultSet rs = stmt.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 lastBackup = rs.getLong("last_backup_check_at");
                 lastBackupID = rs.getInt("last_backup_id");
             } else {
@@ -63,7 +59,7 @@ public class BlockEntityBackup extends TimestampedEntry {
             throw new RuntimeException("[CRACKDOWN] Failed to find block entity by ID", e);
         }
 
-        if(!forceBackup && lastBackup+3600 > timestamp){
+        if (!forceBackup && lastBackup + 3600 > timestamp) {
             return;//too soon for hourly backup
         }
 
@@ -71,14 +67,14 @@ public class BlockEntityBackup extends TimestampedEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    SELECT checksum
-                    FROM block_backup_record
-                    WHERE id=?
-                    """
+                            SELECT checksum
+                            FROM block_backup_record
+                            WHERE id=?
+                            """
             );
             stmt.setInt(1, lastBackupID);
             ResultSet rs = stmt.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 oldChecksum = rs.getBytes("checksum");
             } else {
                 throw new SQLException("[CRACKDOWN] Failed to find block entity by ID");
@@ -98,15 +94,15 @@ public class BlockEntityBackup extends TimestampedEntry {
         byte[] raw = stream.toByteArray();
         byte[] checksum = BackupUtil.checksum(raw);
 
-        if(BackupUtil.compareChecksums(oldChecksum,checksum)){
+        if (BackupUtil.compareChecksums(oldChecksum, checksum)) {
             //checksum matches. Update lastCheckedTime
             try {
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                        UPDATE block_entity
-                        SET last_backup_check_at = ?
-                        WHERE id = ?
-                        """
+                                UPDATE block_entity
+                                SET last_backup_check_at = ?
+                                WHERE id = ?
+                                """
                 );
                 stmt.setLong(1, timestamp);
                 stmt.setInt(2, thisID);
@@ -129,18 +125,18 @@ public class BlockEntityBackup extends TimestampedEntry {
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
-                    INSERT INTO block_backup_record(
-                    entity,
-                    created_at,
-                    compression,
-                    checksum
-                    ) VALUES (?, ?, ?, ?)
-                    """
+                            INSERT INTO block_backup_record(
+                            entity,
+                            created_at,
+                            compression,
+                            checksum
+                            ) VALUES (?, ?, ?, ?)
+                            """
             );
             stmt.setInt(1, thisID);
             stmt.setLong(2, timestamp);
-            stmt.setInt(3, CommonOperations.getOrCreateId_Compression("DEFAULT","0", connection));
-            stmt.setBytes(4,checksum);
+            stmt.setInt(3, CommonOperations.getOrCreateId_Compression("DEFAULT", "0", connection));
+            stmt.setBytes(4, checksum);
             stmt.executeUpdate();
             try (ResultSet keys = stmt.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -151,11 +147,11 @@ public class BlockEntityBackup extends TimestampedEntry {
             }
             stmt = connection.prepareStatement(
                     """
-                    INSERT INTO block_nbt_blob(
-                    record,
-                    data
-                    ) VALUES (?, ?)
-                    """
+                            INSERT INTO block_nbt_blob(
+                            record,
+                            data
+                            ) VALUES (?, ?)
+                            """
             );
             stmt.setInt(1, recordID);
             stmt.setBlob(2, blob);

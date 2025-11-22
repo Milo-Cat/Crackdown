@@ -13,7 +13,7 @@ public class PlayerConnectSQL extends TimestampedEntry {
     private final boolean joined;
 
     public PlayerConnectSQL(Player player, boolean joined) {
-        this.playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
+        this.playerID = ((GetDatabaseIdFunc) player).crackdown$getDatabaseID();
         this.joined = joined;
     }
 

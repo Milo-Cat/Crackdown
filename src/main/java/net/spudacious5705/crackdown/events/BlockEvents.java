@@ -19,9 +19,9 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.block.BlockInteraction;
 import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
-import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityBackup;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
@@ -29,20 +29,20 @@ import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import java.util.List;
 import java.util.regex.Matcher;
 
-import static net.spudacious5705.crackdown.db_operations.block.BlockDBHelper.*;
+import static net.spudacious5705.crackdown.db_operations.block.BlockDBHelper.pattern;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
-        if(event.getPlayer() instanceof ServerPlayer player) {// OLD CODE
+        if (event.getPlayer() instanceof ServerPlayer player) {// OLD CODE
 
             Level level = player.level();
             String nbt = null;
-            if(level.getBlockState(event.getPos()).hasBlockEntity()){
+            if (level.getBlockState(event.getPos()).hasBlockEntity()) {
                 BlockEntity be = level.getBlockEntity(event.getPos());
-                if(be != null){
+                if (be != null) {
                     nbt = be.serializeNBT().toString();
                 }
             }
@@ -50,7 +50,7 @@ public class BlockEvents {
             BlockInteraction.logPlayerInteraction(
                     event.getPos(),
                     EventsUtil.DimensionName(level),
-                    ((GetDatabaseIdFunc)player).crackdown$getDatabaseID(),
+                    ((GetDatabaseIdFunc) player).crackdown$getDatabaseID(),
                     Blocks.AIR.defaultBlockState(),
                     event.getState(),
                     "BREAK",
@@ -62,16 +62,16 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
-        if(!event.isCanceled()&&event.getEntity()!=null){
-            if(event.getLevel() instanceof ServerLevel level){
+        if (!event.isCanceled() && event.getEntity() != null) {
+            if (event.getLevel() instanceof ServerLevel level) {
                 String dimension = EventsUtil.DimensionName(level);
                 BlockState oldState = event.getLevel().getBlockState(event.getPos());
                 BlockState newState = event.getPlacedBlock();
 
                 String nbt = null;
-                if(level.getBlockState(event.getPos()).hasBlockEntity()){
+                if (level.getBlockState(event.getPos()).hasBlockEntity()) {
                     BlockEntity be = level.getBlockEntity(event.getPos());
-                    if(be != null){
+                    if (be != null) {
                         nbt = be.serializeNBT().toString();
                     }
                 }
@@ -79,7 +79,7 @@ public class BlockEvents {
                 BlockInteraction.logPlayerInteraction(
                         event.getPos(),
                         dimension,
-                        event.getEntity() instanceof ServerPlayer player ? ((GetDatabaseIdFunc)player).crackdown$getDatabaseID() : -1,
+                        event.getEntity() instanceof ServerPlayer player ? ((GetDatabaseIdFunc) player).crackdown$getDatabaseID() : -1,
                         newState,
                         oldState,
                         "PLACE",
@@ -90,10 +90,10 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockMultiPlace(BlockEvent.EntityMultiPlaceEvent event) {
-        if(event.getLevel() instanceof ServerLevel level){
+        if (event.getLevel() instanceof ServerLevel level) {
             String dimension = EventsUtil.DimensionName(level);
 
-            for(BlockSnapshot blockSnapshot: event.getReplacedBlockSnapshots()) {
+            for (BlockSnapshot blockSnapshot : event.getReplacedBlockSnapshots()) {
                 String nbt = null;
                 if (blockSnapshot.getReplacedBlock().hasBlockEntity()) {
                     BlockEntity be = blockSnapshot.getBlockEntity();
@@ -103,7 +103,7 @@ public class BlockEvents {
                 }
 
                 String action;
-                if(blockSnapshot.getReplacedBlock().getBlock() == Blocks.AIR){
+                if (blockSnapshot.getReplacedBlock().getBlock() == Blocks.AIR) {
                     action = "PLACE";
                 } else if (blockSnapshot.getCurrentBlock().getBlock() == Blocks.AIR) {
                     action = "BREAK";
@@ -125,15 +125,15 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFluidPlaceBlock(BlockEvent.FluidPlaceBlockEvent event) {//useful for lavacasts?
-        if(!event.isCanceled()&&event.getLevel() instanceof ServerLevel level){
-            BlockInteraction.logInteraction(event.getPos(),EventsUtil.DimensionName(level),"fluid",-1,event.getNewState(),event.getOriginalState(),"FLUID_PLACE",null);
+        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level) {
+            BlockInteraction.logInteraction(event.getPos(), EventsUtil.DimensionName(level), "fluid", -1, event.getNewState(), event.getOriginalState(), "FLUID_PLACE", null);
         }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onToolModifiesBlock(BlockEvent.BlockToolModificationEvent event) {
-        if(!event.isCanceled()&&event.getLevel()instanceof ServerLevel level) {
-            BlockInteraction.logPlayerInteraction(event.getPos(),EventsUtil.DimensionName(level),
+        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level) {
+            BlockInteraction.logPlayerInteraction(event.getPos(), EventsUtil.DimensionName(level),
                     GetDatabaseIdFunc.getDatabaseID(event.getPlayer()),
                     event.getFinalState(),
                     event.getState(),
@@ -144,77 +144,77 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onInteractBlock(PlayerInteractEvent.RightClickBlock event) {
-        if(event.getUseBlock()== Event.Result.DENY||event.isCanceled())return;
+        if (event.getUseBlock() == Event.Result.DENY || event.isCanceled()) return;
 
-        if(event.getLevel() instanceof ServerLevel level){
-            beginCheckInteraction(level, (ServerPlayer) event.getEntity(),event.getPos());
+        if (event.getLevel() instanceof ServerLevel level) {
+            beginCheckInteraction(level, (ServerPlayer) event.getEntity(), event.getPos());
         }
     }
-
 
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onAttackBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if(event.getUseBlock()== Event.Result.DENY||event.isCanceled())return;
+        if (event.getUseBlock() == Event.Result.DENY || event.isCanceled()) return;
 
-        if(event.getLevel() instanceof ServerLevel level){
-            beginCheckInteraction(level, (ServerPlayer) event.getEntity(),event.getPos());
+        if (event.getLevel() instanceof ServerLevel level) {
+            beginCheckInteraction(level, (ServerPlayer) event.getEntity(), event.getPos());
         }
     }
 
-    private static void beginCheckInteraction(ServerLevel level, ServerPlayer player, BlockPos pos){
+    private static void beginCheckInteraction(ServerLevel level, ServerPlayer player, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        if(state.hasBlockEntity()){
+        if (state.hasBlockEntity()) {
             BlockEntity be = level.getBlockEntity(pos);
-            if(be!=null) {
+            if (be != null) {
                 CompoundTag tagSnapshot = be.serializeNBT();
                 //execute at end of tick
-                level.getServer().execute(() -> checkInteractionWithBE(level,player,pos,state,tagSnapshot,be));
+                level.getServer().execute(() -> checkInteractionWithBE(level, player, pos, state, tagSnapshot, be));
                 return;
             }
         }
         //execute at end of tick
-        level.getServer().execute(() -> checkInteraction(level,player,pos,state));
+        level.getServer().execute(() -> checkInteraction(level, player, pos, state));
     }
 
-    private static void checkInteraction(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state){
+    private static void checkInteraction(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state) {
         BlockState newState = level.getBlockState(pos);
-        if(newState!=state){
+        if (newState != state) {
             String action;
-            if(newState.getBlock()!=state.getBlock()){
+            if (newState.getBlock() != state.getBlock()) {
                 action = "REPLACE";
             } else {
                 action = "STATE_CHANGE";
             }
-            BlockInteraction.logPlayerInteraction(pos,EventsUtil.DimensionName(level),GetDatabaseIdFunc.getDatabaseID(player),newState,state,action, null);
+            BlockInteraction.logPlayerInteraction(pos, EventsUtil.DimensionName(level), GetDatabaseIdFunc.getDatabaseID(player), newState, state, action, null);
         }
         //noChange
     }
-    private static void checkInteractionWithBE(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, CompoundTag tagSnapshot, BlockEntity blockEntity){
-        checkInteraction(level,player,pos,state);
+
+    private static void checkInteractionWithBE(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, CompoundTag tagSnapshot, BlockEntity blockEntity) {
+        checkInteraction(level, player, pos, state);
         BlockEntity be = level.getBlockEntity(pos);
         int beID = GetDatabaseIdFunc.getDatabaseID(blockEntity);
         String action;
         String info = null;
-        if(be!=null) {
+        if (be != null) {
             CompoundTag newSnapshot = be.serializeNBT();
-            if(be == blockEntity){
-                if(newSnapshot.equals(tagSnapshot)){
+            if (be == blockEntity) {
+                if (newSnapshot.equals(tagSnapshot)) {
                     return;//NO CHANGE :)
                 }
-                action="DATA_MODIFIED";
+                action = "DATA_MODIFIED";
                 BlockEntityBackup.save(beID, newSnapshot, false);
-                CompoundTag diff = EventsUtil.findDifference(newSnapshot,tagSnapshot);//todo OFFLOAD difference finding to 3rd thread
+                CompoundTag diff = EventsUtil.findDifference(newSnapshot, tagSnapshot);//todo OFFLOAD difference finding to 3rd thread
                 info = diff.getAsString();
             } else {
-                action="REPLACED";
+                action = "REPLACED";
                 BlockEntityBackup.save(beID, tagSnapshot, true);
             }
         } else {
-            action="REMOVED";
+            action = "REMOVED";
             BlockEntityBackup.save(beID, tagSnapshot, true);
         }
-        BlockEntityInteraction.log(beID,"player",GetDatabaseIdFunc.getDatabaseID(player),action,info);
+        BlockEntityInteraction.log(beID, "player", GetDatabaseIdFunc.getDatabaseID(player), action, info);
 
     }
 
@@ -222,12 +222,12 @@ public class BlockEvents {
     public static void onNonPlayerDestroyBlock(LivingDestroyBlockEvent event) {
         Entity entity = event.getEntity();
 
-        if(entity.level() instanceof ServerLevel level) {// OLD CODE
+        if (entity.level() instanceof ServerLevel level) {// OLD CODE
 
             String nbt = null;
-            if(level.getBlockState(event.getPos()).hasBlockEntity()){
+            if (level.getBlockState(event.getPos()).hasBlockEntity()) {
                 BlockEntity be = level.getBlockEntity(event.getPos());
-                if(be != null){
+                if (be != null) {
                     nbt = be.serializeNBT().toString();
                 }
             }
@@ -248,25 +248,25 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onTrample(BlockEvent.FarmlandTrampleEvent event) {
-        if(event.getLevel() instanceof ServerLevel level){
+        if (event.getLevel() instanceof ServerLevel level) {
             BlockState state = level.getBlockState(event.getPos());
             int playerID;
             String source;
-            if(event.getEntity() instanceof ServerPlayer player){
+            if (event.getEntity() instanceof ServerPlayer player) {
                 playerID = GetDatabaseIdFunc.getDatabaseID(player);
                 source = "player";
             } else {
                 playerID = -1;
                 source = EventsUtil.entityType(event.getEntity());
             }
-            BlockInteraction.logInteraction(event.getPos(),EventsUtil.DimensionName(level),source,playerID,null,state,"TRAMPLE",null);
+            BlockInteraction.logInteraction(event.getPos(), EventsUtil.DimensionName(level), source, playerID, null, state, "TRAMPLE", null);
         }
     }
 
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onX(ExplosionEvent.Detonate event) {
-        if(!event.isCanceled() && event.getLevel() instanceof ServerLevel level) {
+        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level) {
             final long timestamp = DatabaseManager.timestamp();
             final String dimension = EventsUtil.DimensionName(level);
 
@@ -300,7 +300,7 @@ public class BlockEvents {
 
             }
 
-            new BlocksExploded(timestamp,dimension,ptr, blocks, states, x,y,z);
+            new BlocksExploded(timestamp, dimension, ptr, blocks, states, x, y, z);
         }
     }
 }

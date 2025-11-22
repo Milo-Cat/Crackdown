@@ -16,9 +16,11 @@ import java.util.Set;
 
 public interface EventsUtil {
 
-    static String DimensionName(LevelAccessor level){return ((ServerLevel)level).dimension().location().toString();}
+    static String DimensionName(LevelAccessor level) {
+        return ((ServerLevel) level).dimension().location().toString();
+    }
 
-    static BlockPos copyBlockPos(BlockPos pos){
+    static BlockPos copyBlockPos(BlockPos pos) {
         return new BlockPos(
                 pos.getX(),
                 pos.getY(),
@@ -26,15 +28,17 @@ public interface EventsUtil {
         );
     }
 
-    static String entityType(Entity entity){
+    static String entityType(Entity entity) {
         ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         return key != null ? key.toString() : "UNREGISTERED";
     }
-    static String blockEntityType(BlockEntity be){
+
+    static String blockEntityType(BlockEntity be) {
         ResourceLocation key = ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(be.getType());
         return key != null ? key.toString() : "UNREGISTERED";
     }
-    static String blockType(Block block){
+
+    static String blockType(Block block) {
         ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
         return key != null ? key.toString() : "UNREGISTERED";
     }
@@ -53,7 +57,7 @@ public interface EventsUtil {
         removedKeys.removeAll(newKeys);
         for (String key : removedKeys) {
             Tag tag = oldSnapshot.get(key);
-            if(tag!=null) {
+            if (tag != null) {
                 removed.put(key, tag);
             }
         }
@@ -63,7 +67,7 @@ public interface EventsUtil {
         addedKeys.removeAll(oldKeys);
         for (String key : addedKeys) {
             Tag tag = newSnapshot.get(key);
-            if(tag!=null) {
+            if (tag != null) {
                 added.put(key, tag);
             }
         }
@@ -75,8 +79,8 @@ public interface EventsUtil {
             Tag oldVal = oldSnapshot.get(key);
             Tag newVal = newSnapshot.get(key);
             if (oldVal != null && newVal != null && !newVal.equals(oldVal)) {
-                if(oldVal instanceof CompoundTag oldComp && newVal instanceof CompoundTag newComp){
-                    CompoundTag subTag = findDifference(newComp,oldComp);//recursive search
+                if (oldVal instanceof CompoundTag oldComp && newVal instanceof CompoundTag newComp) {
+                    CompoundTag subTag = findDifference(newComp, oldComp);//recursive search
                     Tag splitSub = subTag.get("removed");
                     if (splitSub != null) {
                         removed.put(key, splitSub);
@@ -91,8 +95,8 @@ public interface EventsUtil {
                 }
             }
         }
-        diff.put("removed",removed);
-        diff.put("added",added);
+        diff.put("removed", removed);
+        diff.put("added", added);
 
         return diff;
     }

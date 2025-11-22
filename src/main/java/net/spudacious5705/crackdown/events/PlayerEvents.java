@@ -4,26 +4,29 @@ package net.spudacious5705.crackdown.events;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
-import net.minecraftforge.event.entity.player.*;
+import net.minecraftforge.event.entity.player.AdvancementEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.village.VillageSiegeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
-import net.spudacious5705.crackdown.db_operations.player.PlayerConnectSQL;
 import net.spudacious5705.crackdown.database.DatabaseManager;
+import net.spudacious5705.crackdown.db_operations.player.PlayerConnectSQL;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class PlayerEvents {
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if(event.getEntity() instanceof ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             DatabaseManager.queueEntry(new PlayerConnectSQL(player, true));
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event) {
-        if(event.getEntity() instanceof ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             DatabaseManager.queueEntry(new PlayerConnectSQL(player, false));
         }
     }
@@ -53,7 +56,7 @@ public class PlayerEvents {
     public static void onItemDestroy(PlayerDestroyItemEvent event) {
         event.getOriginal();
         InteractionHand hand = event.getHand();
-        if(hand!=null) {
+        if (hand != null) {
             event.getEntity().getItemInHand(event.getHand()).getItem();
         }
     }
