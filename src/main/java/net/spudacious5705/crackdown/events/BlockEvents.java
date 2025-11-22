@@ -1,21 +1,22 @@
 package net.spudacious5705.crackdown.events;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.gameevent.GameEventDispatcher;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
-import net.spudacious5705.crackdown.DBOperations.Block.BlockInteraction;
-import net.spudacious5705.crackdown.DBOperations.CommonOperations;
+import net.spudacious5705.crackdown.db_operations.Block.BlockInteraction;
+import net.spudacious5705.crackdown.db_operations.Block.BlocksExploded;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
+
+import static net.spudacious5705.crackdown.db_operations.Block.BlockDBHelper.*;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class BlockEvents {
@@ -56,15 +57,15 @@ public class BlockEvents {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockMultiPlace(BlockEvent.EntityMultiPlaceEvent event) {
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFluidPlaceBlock(BlockEvent.FluidPlaceBlockEvent event) {//useful for lavacasts?
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onToolModifiesBlock(BlockEvent.BlockToolModificationEvent event) {
         event.getContext().getClickedPos();
         event.getToolAction().name();
@@ -73,32 +74,40 @@ public class BlockEvents {
         event.getFinalState();
     }
 
-    @SubscribeEvent//todo for BOTH of these, need to check if the block has a BE and if it changed.
+    @SubscribeEvent(priority = EventPriority.LOWEST)//todo for BOTH of these, need to check if the block has a BE and if it changed.
     public static void onInteractBlock(PlayerInteractEvent.RightClickBlock event) {
         event.getEntity();//player
         event.getUseBlock();//result
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onAttackBlock(PlayerInteractEvent.LeftClickBlock event) {
         event.getEntity();//player
         event.getUseBlock();//result
     }
 
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onTrample(BlockEvent.FarmlandTrampleEvent event) {
         event.getEntity();//player
         event.getPos();//pos
     }
 
-    /*@SubscribeEvent
-    public static void onX(ExplosionEvent.Start event) {
 
-    }
-
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onX(ExplosionEvent.Detonate event) {
+        if(!event.isCanceled() && event.getLevel() instanceof ServerLevel level) {
+            final long timestamp = DatabaseManager.timestamp();
+            final String dimension = EventsUtil.DimensionName(level);
 
-    }*/
+            AffectedBlock[] affectedBlocks =
+                    event.getAffectedBlocks().stream().map((pos) ->
+                CreateAffectedBlock(
+                        pos, level.getBlockState(pos)
+                )
+            ).toArray(AffectedBlock[]::new);
+
+            new BlocksExploded(timestamp,dimension,affectedBlocks);
+        }
+    }
 }

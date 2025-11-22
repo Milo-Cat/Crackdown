@@ -58,7 +58,7 @@ public enum Tables {
             action INTEGER NOT NULL,
             block_new INTEGER NOT NULL,
             state_new INTEGER,
-            block_old INTEGER NOT NULL,
+            block_old INTEGER,
             state_old INTEGER,
             nbt TEXT,
             
