@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface BlockDBHelper {
-    Pattern pattern = Pattern.compile("\\(([^)]+)\\)(?:\\[([^]]+)])?");
+    Pattern pattern = Pattern.compile("([^\\{]+)\\{([^\\}]+)\\}(?:\\[([^]]+)])?");
     static AffectedBlock CreateAffectedBlock(BlockPos pos, BlockState state) {
 
         BlockStateString s = getBlockStateAsString(state);
@@ -27,8 +27,9 @@ public interface BlockDBHelper {
         Matcher matcher = pattern.matcher(state.toString());
 
         if (matcher.matches()) {
-            String blockString = matcher.group(1); // inside ()
-            String stateString = matcher.group(2); // inside []
+            //group 1 is usually just "Block". and is always block for blockState
+            String blockString = matcher.group(2); // inside ()
+            String stateString = matcher.group(3); // inside []
 
             return new BlockStateString(
                     blockString,
