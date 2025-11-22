@@ -10,12 +10,12 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class CrackdownContainerListener implements ContainerListener {
     final int playerDBID;
-    final Boolean[] isTracked;
+    final boolean[] isTracked;
     final ItemStack[] snapshot;
 
     public CrackdownContainerListener(@NotNull ServerPlayer player, @NotNull ItemStack[] snapshot, int trackArraySize) {
         this.playerDBID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
-        this.isTracked = new Boolean[trackArraySize];
+        this.isTracked = new boolean[trackArraySize];
         this.snapshot = snapshot;
     }
 
