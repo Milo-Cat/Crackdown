@@ -271,7 +271,6 @@ public class CommonOperations {
         ENTITY_ACTION_CACHE.clear();
         ENTITY_TYPE_CACHE.clear();
         ENTITY_ID_CACHE.clear();
-        COMPRESSION_TYPE_CACHE.clear();
     }
 
     public static int getOrCreateId_Player(ServerPlayer serverPlayer) {
