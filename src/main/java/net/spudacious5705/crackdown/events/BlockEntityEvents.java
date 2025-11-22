@@ -16,7 +16,9 @@ import net.spudacious5705.crackdown.events.listeners.BlockEntityContainerListene
 import net.spudacious5705.crackdown.events.listeners.CrackdownContainerListener;
 import net.spudacious5705.crackdown.events.listeners.EntityContainerListener;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class BlockEntityEvents {
@@ -26,24 +28,24 @@ public class BlockEntityEvents {
 
     @SubscribeEvent
     public static void onContainerOpen(PlayerContainerEvent.Open event) {
-        if(event.getEntity() instanceof ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
 
             AbstractContainerMenu menu = event.getContainer();
 
             int size = menu.slots.size();
 
-            if(size == 0) return;
+            if (size == 0) return;
 
             ItemStack[] snapshot = new ItemStack[size];
 
             Map<Container, CrackdownContainerListener> listeners = new HashMap<>();
 
-            for (int i = 0; i < size; i++){
+            for (int i = 0; i < size; i++) {
                 Slot slot = menu.slots.get(i);
                 Container container = slot.container;
-                if(listeners.containsKey(container)){
+                if (listeners.containsKey(container)) {
                     listeners.get(container).track(slot.getContainerSlot());
-                } else if(container instanceof BlockEntity blockEntity){
+                } else if (container instanceof BlockEntity blockEntity) {
 
                     listeners.put(container,
                             new BlockEntityContainerListener(
@@ -52,7 +54,7 @@ public class BlockEntityEvents {
                                     size,
                                     blockEntity
                             ));
-                } else if(container instanceof Entity entity){
+                } else if (container instanceof Entity entity) {
 
                     listeners.put(container,
                             new EntityContainerListener(
@@ -65,7 +67,7 @@ public class BlockEntityEvents {
                 snapshot[i] = slot.getItem().copy();
             }
 
-            for(CrackdownContainerListener listener : listeners.values()) {
+            for (CrackdownContainerListener listener : listeners.values()) {
 
                 event.getContainer().addSlotListener(listener);
 
@@ -77,7 +79,7 @@ public class BlockEntityEvents {
 
     @SubscribeEvent
     public static void onContainerClose(PlayerContainerEvent.Close event) {
-        if(event.getEntity() instanceof ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer) {
             AbstractContainerMenu menu = event.getContainer();
 
             do {
