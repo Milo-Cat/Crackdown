@@ -6,88 +6,72 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.spudacious5705.crackdown.DBOperations.BlockEntity.BlockEntityInteraction;
+import net.spudacious5705.crackdown.DBOperations.Entity.EntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
 
-public class CrackdownContainerListener implements ContainerListener {
+public abstract class CrackdownContainerListener implements ContainerListener {
     final int playerDBID;
-    final WeakReference<AbstractContainerMenu> storedMenu;
     final Boolean[] isTracked;
     final ItemStack[] snapshot;
 
-    public CrackdownContainerListener(@NotNull AbstractContainerMenu menu, @NotNull ServerPlayer player, @NotNull ItemStack[] snapshot, @NotNull Boolean[] trackArray) {
+    public CrackdownContainerListener(@NotNull ServerPlayer player, @NotNull ItemStack[] snapshot, int trackArraySize) {
         this.playerDBID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
-        this.storedMenu = new WeakReference<>(menu);
-        this.isTracked = trackArray;
+        this.isTracked = new Boolean[trackArraySize];
         this.snapshot = snapshot;
     }
 
+    public void track(int i){
+        isTracked[i]=true;
+    }
+
     @Override
-    public void slotChanged(@NotNull AbstractContainerMenu m, int slotIndex, @NotNull ItemStack stack) {//todo: change implementation to handle multiple viewers.
-        if(isTracked[slotIndex]){
+    public void slotChanged(@NotNull AbstractContainerMenu menu, int slotIndex, @NotNull ItemStack stack) {//todo: change implementation to handle multiple viewers.
+        if (isTracked[slotIndex]) {
 
-            AbstractContainerMenu menu = storedMenu.get();
-            if(menu == null){
-                //todo: remove instance or something.
-                return;
-            }
+            ItemStack old = snapshot[slotIndex];
+            ItemStack now = menu.slots.get(slotIndex).getItem().copy();
 
-            if(m != menu)return;//not MY menu >:(
-
-            Slot slot = menu.slots.get(slotIndex);
-            if(slot.container instanceof BlockEntity blockEntity) {
-
-                ItemStack old = snapshot[slotIndex];
-                ItemStack now = m.slots.get(slotIndex).getItem().copy();
-
-                if(now == ItemStack.EMPTY){
-                    if(old == ItemStack.EMPTY){
-                        //no change? Don't log
-                    } else {
-                        //ALL Items REMOVED!
-                        logCountChange(slotIndex,ItemStackChangeType.REMOVED, old.getCount(), blockEntity, playerDBID);
-                    }
-
-                    //has item so compare
-                } else if(ItemStack.isSameItemSameTags(old,now)){
-                    int diff = old.getCount()-now.getCount();
-                    if(diff<0){
-                        //Items REMOVED!
-                        logCountChange(slotIndex,ItemStackChangeType.REMOVED, diff, blockEntity, playerDBID);
-                    } else if (diff>0) {
-                        //Items ADDED!
-                        logCountChange(slotIndex,ItemStackChangeType.ADDED, diff, blockEntity, playerDBID);
-                    } else {
-                        //no change? Don't log
-                    }
-                } else {//Items CHANGED!
-                    if(old == ItemStack.EMPTY){
-                        logSwap(slotIndex, old, now, blockEntity, playerDBID);
-                    }
-
+            if (now == ItemStack.EMPTY) {
+                if (old != ItemStack.EMPTY){
+                    //ALL Items REMOVED!
+                    logItemCountChange(slotIndex, ItemStackChangeType.REMOVED, old.getCount(), old);
                 }
-                snapshot[slotIndex] = now;
+
+                //has item so compare
+            } else if (ItemStack.isSameItemSameTags(old, now)) {
+                int diff = old.getCount() - now.getCount();
+                if (diff < 0) {
+                    //Items REMOVED!
+                    logItemCountChange(slotIndex, ItemStackChangeType.REMOVED, diff, old);
+                } else if (diff > 0) {
+                    //Items ADDED!
+                    logItemCountChange(slotIndex, ItemStackChangeType.ADDED, diff, now);
+                }
+            } else {//Items CHANGED!
+                if (old == ItemStack.EMPTY) {
+                    logItemCountChange(slotIndex, ItemStackChangeType.ADDED, now.getCount(), now);
+                } else {
+                    logItemSwap(slotIndex, now, old);
+                }
+
             }
+            snapshot[slotIndex] = now;
         }
     }
+
+    abstract void logItemSwap(int slotIndex, ItemStack now, ItemStack old);
+
+    abstract void logItemCountChange(int slotIndex, ItemStackChangeType itemStackChangeType, int count, ItemStack now);
 
     @Override
     public void dataChanged(@NotNull AbstractContainerMenu menu, int dataIndex, int value) {
 
     }
 
-    public void close() {
-
-    }
-
-    static void logCountChange(int slotIndex, ItemStackChangeType interaction, int count, BlockEntity blockEntity, int playerID){
-
-    }
-
-    static void logSwap(int slotIndex, ItemStack old, ItemStack now, BlockEntity blockEntity, int playerID){
-
-    }
+    public abstract void close();
 }

@@ -4,9 +4,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.living.*;
@@ -74,8 +76,7 @@ public class EntityEvents {
             EntityInteraction.log(pos,dimension,entityID,source,playerID,action,damageInfo+"}");
         } else {
             if(attackerEntity != null) {
-                ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(attackerEntity.getType());
-                String type = key != null ? key.toString() : "UNREGISTERED";
+                String type = EventsUtil.entityType(attackerEntity);
                 damageInfo = damageInfo + ", \"attacker_entity\": \""+
                         type
                         +"\"}";
@@ -101,6 +102,10 @@ public class EntityEvents {
         event.getEntity();//player
         event.getTarget();//entity
         event.getLocalPos();
+        if(event.getTarget() instanceof ContainerEntity c){
+            event.getTarget();
+
+        }
     }
 
     @SubscribeEvent

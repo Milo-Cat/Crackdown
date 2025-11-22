@@ -1,21 +1,21 @@
 package net.spudacious5705.crackdown.DBOperations;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.DBOperations.BlockEntity.GetOrCreateBlockEntityID;
 import net.spudacious5705.crackdown.DBOperations.Entity.GetOrCreateEntityID;
 import net.spudacious5705.crackdown.DBOperations.Player.GetOrCreatePlayerID;
 import net.spudacious5705.crackdown.database.DatabaseManager;
+import net.spudacious5705.crackdown.events.EventsUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,19 +47,19 @@ public class CommonOperations {
     }
 
     // Block
-    static int getOrCreateId_Block(String name, Connection connection) {
+    public static int getOrCreateId_Block(String name, Connection connection) {
         return BLOCK_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block","name",n, connection));
     }
 
     // Source
-    static int getOrCreateId_Source(String name, Connection connection) {
+    public static int getOrCreateId_Source(String name, Connection connection) {
         return SOURCE_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("source","type",n, connection));
     }
 
     // Block Action
-    static int getOrCreateId_BlockAction(String name, Connection connection) {
+    public static int getOrCreateId_BlockAction(String name, Connection connection) {
         return BLOCK_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block_action_types","action",n, connection));
     }
@@ -71,13 +71,13 @@ public class CommonOperations {
     }
 
     // Block Entity Action
-    static int getOrCreateId_BlockEntityAction(String name, Connection connection) {
+    public static int getOrCreateId_BlockEntityAction(String name, Connection connection) {
         return BLOCK_ENTITY_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block_entity_action_types","action",n, connection));
     }
 
     // Entity Action
-    static int getOrCreateId_EntityAction(String name, Connection connection) {
+    public static int getOrCreateId_EntityAction(String name, Connection connection) {
         return ENTITY_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("entity_action_types","action",n, connection));
     }
@@ -107,6 +107,40 @@ public class CommonOperations {
         String insertSql = "INSERT INTO " + table + "("+column_name+") VALUES (?)";
         try (PreparedStatement insert = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             insert.setString(1, resource_name);
+            insert.executeUpdate();
+            try (ResultSet keys = insert.getGeneratedKeys()) {
+                if (keys.next()) {
+                    return keys.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return -1;
+    }
+
+
+    public static int getOrCreateId_State(String state, int blockID, Connection connection) {
+
+        String selectSql = "SELECT id FROM block_state WHERE block = ? AND state = ?";
+        try (PreparedStatement select = connection.prepareStatement(selectSql)) {
+            select.setInt(1, blockID);
+            select.setString(2, state);
+            try (ResultSet rs = select.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        // ITEM NOT FOUND, GENERATING NEW ENTRY
+        String insertSql = "INSERT INTO block_state(block, state) VALUES (?, ?)";
+        try (PreparedStatement insert = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            insert.setInt(1, blockID);
+            insert.setString(2, state);
             insert.executeUpdate();
             try (ResultSet keys = insert.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -162,8 +196,7 @@ public class CommonOperations {
 
         // Capture values on the main thread
         final UUID uuid = entity.getUUID();
-        ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        final String type = key != null ? key.toString() : "UNREGISTERED";
+        final String type = EventsUtil.entityType(entity);
         final CompletableFuture<Integer> future = new CompletableFuture<>();
 
         DatabaseManager.priorityQueueEntry(new GetOrCreateEntityID(type,uuid.toString(), future));
@@ -182,8 +215,7 @@ public class CommonOperations {
         final String dimension = blockEntity.getLevel().dimension().location().toString();
 
         final BlockPos pos = blockEntity.getBlockPos();
-        ResourceLocation key = ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(blockEntity.getType());
-        final String type = key != null ? key.toString() : "UNREGISTERED";
+        final String type = EventsUtil.blockEntityType(blockEntity);
         final CompletableFuture<Integer> future = new CompletableFuture<>();
 
         DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos,dimension,type, future));

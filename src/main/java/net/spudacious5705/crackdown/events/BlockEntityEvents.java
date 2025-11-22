@@ -2,6 +2,8 @@ package net.spudacious5705.crackdown.events;
 
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -10,11 +12,11 @@ import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
+import net.spudacious5705.crackdown.events.listeners.BlockEntityContainerListener;
 import net.spudacious5705.crackdown.events.listeners.CrackdownContainerListener;
-import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
+import net.spudacious5705.crackdown.events.listeners.EntityContainerListener;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class BlockEntityEvents {
@@ -32,36 +34,44 @@ public class BlockEntityEvents {
 
             if(size == 0) return;
 
-            Boolean[] isTracked = new Boolean[size];
             ItemStack[] snapshot = new ItemStack[size];
 
-            boolean shouldTrack = false;
+            Map<Container, CrackdownContainerListener> listeners = new HashMap<>();
 
             for (int i = 0; i < size; i++){
                 Slot slot = menu.slots.get(i);
-                if(slot.container instanceof BlockEntity blockEntity){
-                    //todo: check if this block entity is in the database and consider making a backup.
-                    int id = ((GetDatabaseIdFunc)blockEntity).crackdown$getDatabaseID();
+                Container container = slot.container;
+                if(listeners.containsKey(container)){
+                    listeners.get(container).track(slot.getContainerSlot());
+                } else if(container instanceof BlockEntity blockEntity){
 
-                    isTracked[i] = true;
-                    shouldTrack = true;
-                } else {
-                    isTracked[i] = false;
+                    listeners.put(container,
+                            new BlockEntityContainerListener(
+                                    player,
+                                    snapshot,
+                                    size,
+                                    blockEntity
+                            ));
+                } else if(container instanceof Entity entity){
+
+                    listeners.put(container,
+                            new EntityContainerListener(
+                                    player,
+                                    snapshot,
+                                    size,
+                                    entity
+                            ));
                 }
                 snapshot[i] = slot.getItem().copy();
             }
 
-            if(shouldTrack) {
-
-                //todo: log action: container opened
-
-                CrackdownContainerListener listener = new CrackdownContainerListener(menu, player, snapshot, isTracked);
+            for(CrackdownContainerListener listener : listeners.values()) {
 
                 event.getContainer().addSlotListener(listener);
 
                 LISTENERS.put(menu, listener);
-
             }
+
         }
     }
 
@@ -69,13 +79,16 @@ public class BlockEntityEvents {
     public static void onContainerClose(PlayerContainerEvent.Close event) {
         if(event.getEntity() instanceof ServerPlayer player) {
             AbstractContainerMenu menu = event.getContainer();
-            CrackdownContainerListener listener = LISTENERS.remove(menu);
-            if (listener != null) {
-                listener.close();
-                menu.removeSlotListener(listener);
-            }
 
-            //todo: log action: container closed
+            do {
+                CrackdownContainerListener listener = LISTENERS.remove(menu);
+                if (listener != null) {
+                    listener.close();
+                    menu.removeSlotListener(listener);
+                } else {
+                    return;
+                }
+            } while (true);
         }
     }
 
