@@ -56,7 +56,7 @@ public enum Tables {
             source INTEGER NOT NULL,
             player INTEGER,
             action INTEGER NOT NULL,
-            block_new INTEGER NOT NULL,
+            block_new INTEGER,
             state_new INTEGER,
             block_old INTEGER,
             state_old INTEGER,
