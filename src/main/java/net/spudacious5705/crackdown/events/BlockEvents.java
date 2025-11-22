@@ -1,6 +1,7 @@
 package net.spudacious5705.crackdown.events;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -13,6 +14,7 @@ import net.minecraftforge.event.entity.living.LivingDestroyBlockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,9 +22,10 @@ import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.block.BlockInteraction;
 import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
 import net.spudacious5705.crackdown.database.DatabaseManager;
+import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityBackup;
+import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
-import java.util.AbstractCollection;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -122,30 +125,97 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFluidPlaceBlock(BlockEvent.FluidPlaceBlockEvent event) {//useful for lavacasts?
-        if(event.getLevel() instanceof ServerLevel level){
+        if(!event.isCanceled()&&event.getLevel() instanceof ServerLevel level){
             BlockInteraction.logInteraction(event.getPos(),EventsUtil.DimensionName(level),"fluid",-1,event.getNewState(),event.getOriginalState(),"FLUID_PLACE",null);
         }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onToolModifiesBlock(BlockEvent.BlockToolModificationEvent event) {
-        event.getContext().getClickedPos();
-        event.getToolAction().name();
-        event.getPlayer();
-        event.getLevel();
-        event.getFinalState();
+        if(!event.isCanceled()&&event.getLevel()instanceof ServerLevel level) {
+            BlockInteraction.logPlayerInteraction(event.getPos(),EventsUtil.DimensionName(level),
+                    GetDatabaseIdFunc.getDatabaseID(event.getPlayer()),
+                    event.getFinalState(),
+                    event.getState(),
+                    event.getToolAction().name(), null);
+
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)//todo for BOTH of these, need to check if the block has a BE and if it changed.
     public static void onInteractBlock(PlayerInteractEvent.RightClickBlock event) {
-        event.getEntity();//player
-        event.getUseBlock();//result
+        if(event.getUseBlock()== Event.Result.DENY||event.isCanceled())return;
+
+        if(event.getLevel() instanceof ServerLevel level){
+            beginCheckInteraction(level, (ServerPlayer) event.getEntity(),event.getPos());
+        }
     }
+
+
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onAttackBlock(PlayerInteractEvent.LeftClickBlock event) {
-        event.getEntity();//player
-        event.getUseBlock();//result
+        if(event.getUseBlock()== Event.Result.DENY||event.isCanceled())return;
+
+        if(event.getLevel() instanceof ServerLevel level){
+            beginCheckInteraction(level, (ServerPlayer) event.getEntity(),event.getPos());
+        }
+    }
+
+    private static void beginCheckInteraction(ServerLevel level, ServerPlayer player, BlockPos pos){
+        BlockState state = level.getBlockState(pos);
+        if(state.hasBlockEntity()){
+            BlockEntity be = level.getBlockEntity(pos);
+            if(be!=null) {
+                CompoundTag tagSnapshot = be.serializeNBT();
+                //execute at end of tick
+                level.getServer().execute(() -> checkInteractionWithBE(level,player,pos,state,tagSnapshot,be));
+                return;
+            }
+        }
+        //execute at end of tick
+        level.getServer().execute(() -> checkInteraction(level,player,pos,state));
+    }
+
+    private static void checkInteraction(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state){
+        BlockState newState = level.getBlockState(pos);
+        if(newState!=state){
+            String action;
+            if(newState.getBlock()!=state.getBlock()){
+                action = "REPLACE";
+            } else {
+                action = "STATE_CHANGE";
+            }
+            BlockInteraction.logPlayerInteraction(pos,EventsUtil.DimensionName(level),GetDatabaseIdFunc.getDatabaseID(player),newState,state,action, null);
+        }
+        //noChange
+    }
+    private static void checkInteractionWithBE(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, CompoundTag tagSnapshot, BlockEntity blockEntity){
+        checkInteraction(level,player,pos,state);
+        BlockEntity be = level.getBlockEntity(pos);
+        int beID = GetDatabaseIdFunc.getDatabaseID(blockEntity);
+        String action;
+        String info = null;
+        if(be!=null) {
+            CompoundTag newSnapshot = be.serializeNBT();
+            if(be == blockEntity){
+                if(newSnapshot.equals(tagSnapshot)){
+                    return;//NO CHANGE :)
+                }
+                action="DATA_MODIFIED";
+                BlockEntityBackup.save(beID, newSnapshot, false);
+                CompoundTag diff = EventsUtil.findDifference(newSnapshot,tagSnapshot);
+                info = diff.getAsString();
+            } else {
+                action="REPLACED";
+                BlockEntityBackup.save(beID, tagSnapshot, true);
+            }
+        } else {
+            action="REMOVED";
+            BlockEntityBackup.save(beID, tagSnapshot, true);
+        }
+        BlockEntityInteraction.log(beID,"player",GetDatabaseIdFunc.getDatabaseID(player),action,info);
+
     }
 
     @SubscribeEvent

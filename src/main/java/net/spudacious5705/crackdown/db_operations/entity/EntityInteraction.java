@@ -97,7 +97,7 @@ public class EntityInteraction extends TimestampedPositionalEntry {
     @Override
     public void accept(Connection connection) {
         int entityID;
-        entityID = CommonOperations.GetOrCreateEntityID(connection,entityUUID.toString(),entityType);
+        entityID = CommonOperations.GetOrCreateEntityID(connection,entityUUID.toString(),entityType,false);
         if(entityID <0) return;
         try {
             PreparedStatement stmt = connection.prepareStatement(

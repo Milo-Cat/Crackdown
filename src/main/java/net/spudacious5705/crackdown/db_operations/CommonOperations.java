@@ -33,6 +33,7 @@ public class CommonOperations {
     private static final Map<String,Integer> ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
     private static final Map<String,Integer> ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String,Integer> ENTITY_ID_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String,Integer> COMPRESSION_TYPE_CACHE = new ConcurrentHashMap<>();
 
     // Dimension
     public static int getOrCreateId_Dimension(String name, Connection connection) {
@@ -148,8 +149,41 @@ public class CommonOperations {
         return -1;
     }
 
+    public static int getOrCreateId_Compression(String name, String version, Connection connection) {
 
-    public static int GetOrCreateEntityID(Connection connection, String uuid, String type) {
+        String selectSql = "SELECT id FROM compression_type WHERE name = ? AND version = ?";
+        try (PreparedStatement select = connection.prepareStatement(selectSql)) {
+            select.setString(1, name);
+            select.setString(2, version);
+            try (ResultSet rs = select.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        // ITEM NOT FOUND, GENERATING NEW ENTRY
+        String insertSql = "INSERT INTO compression_type(name, version) VALUES (?, ?)";
+        try (PreparedStatement insert = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            insert.setString(1, name);
+            insert.setString(2, version);
+            insert.executeUpdate();
+            try (ResultSet keys = insert.getGeneratedKeys()) {
+                if (keys.next()) {
+                    return keys.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return -1;
+    }
+
+
+    public static int GetOrCreateEntityID(Connection connection, String uuid, String type, boolean findDeceased) {
         return ENTITY_ID_CACHE.computeIfAbsent(type+uuid,
                 n -> {
 
@@ -175,7 +209,7 @@ public class CommonOperations {
 
                                     rs.getInt("killed_at");
 
-                                    if (!rs.wasNull()) {
+                                    if (!rs.wasNull()||findDeceased) {
                                         continue;//Found entity is Deceased
                                     }
 
@@ -238,6 +272,7 @@ public class CommonOperations {
         ENTITY_ACTION_CACHE.clear();
         ENTITY_TYPE_CACHE.clear();
         ENTITY_ID_CACHE.clear();
+        COMPRESSION_TYPE_CACHE.clear();
     }
 
     public static int getOrCreateId_Player(ServerPlayer serverPlayer) {
