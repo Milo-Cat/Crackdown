@@ -1,7 +1,7 @@
-package net.spudacious5705.crackdown.DBOperations.Entity;
+package net.spudacious5705.crackdown.db_operations.entity;
 
-import net.spudacious5705.crackdown.DBOperations.CommonOperations;
-import net.spudacious5705.crackdown.DBOperations.SQLOperation;
+import net.spudacious5705.crackdown.db_operations.CommonOperations;
+import net.spudacious5705.crackdown.db_operations.SQLOperation;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 
 import java.sql.*;

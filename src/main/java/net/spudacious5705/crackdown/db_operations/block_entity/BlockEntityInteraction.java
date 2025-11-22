@@ -1,16 +1,9 @@
-package net.spudacious5705.crackdown.DBOperations.BlockEntity;
+package net.spudacious5705.crackdown.db_operations.block_entity;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.spudacious5705.crackdown.DBOperations.CommonOperations;
-import net.spudacious5705.crackdown.DBOperations.TimestampedEntry;
-import net.spudacious5705.crackdown.DBOperations.TimestampedPositionalEntry;
+import net.spudacious5705.crackdown.db_operations.CommonOperations;
+import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 import net.spudacious5705.crackdown.database.DatabaseManager;
-import net.spudacious5705.crackdown.events.EventsUtil;
-import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 
 import java.sql.Connection;

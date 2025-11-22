@@ -1,6 +1,6 @@
-package net.spudacious5705.crackdown.DBOperations.Player;
+package net.spudacious5705.crackdown.db_operations.player;
 
-import net.spudacious5705.crackdown.DBOperations.SQLOperation;
+import net.spudacious5705.crackdown.db_operations.SQLOperation;
 
 import java.sql.*;
 import java.util.concurrent.CompletableFuture;

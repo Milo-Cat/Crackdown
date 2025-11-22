@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.spudacious5705.crackdown.DBOperations.CommonOperations.getOrCreateId_BlockEntity;
+import static net.spudacious5705.crackdown.db_operations.CommonOperations.getOrCreateId_BlockEntity;
 
 @Mixin(BlockEntity.class)
 public class BlockEntityDatabaseIDmixin implements GetDatabaseIdFunc {

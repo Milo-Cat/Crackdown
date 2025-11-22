@@ -1,8 +1,8 @@
-package net.spudacious5705.crackdown.DBOperations.Block;
+package net.spudacious5705.crackdown.db_operations.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
-import net.spudacious5705.crackdown.DBOperations.TimestampedPositionalEntry;
+import net.spudacious5705.crackdown.db_operations.TimestampedPositionalEntry;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
 import javax.annotation.Nullable;

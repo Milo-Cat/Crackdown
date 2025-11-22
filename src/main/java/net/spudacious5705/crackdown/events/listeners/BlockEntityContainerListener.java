@@ -3,7 +3,7 @@ package net.spudacious5705.crackdown.events.listeners;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.spudacious5705.crackdown.db_operations.BlockEntity.BlockEntityInteraction;
+import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 import org.jetbrains.annotations.NotNull;

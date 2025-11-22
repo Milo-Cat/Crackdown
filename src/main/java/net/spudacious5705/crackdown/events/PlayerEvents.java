@@ -9,7 +9,7 @@ import net.minecraftforge.event.village.VillageSiegeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
-import net.spudacious5705.crackdown.DBOperations.Player.PlayerConnectSQL;
+import net.spudacious5705.crackdown.db_operations.player.PlayerConnectSQL;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)

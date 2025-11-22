@@ -1,4 +1,4 @@
-package net.spudacious5705.crackdown.DBOperations;
+package net.spudacious5705.crackdown.db_operations;
 
 import net.spudacious5705.crackdown.database.DatabaseManager;
 

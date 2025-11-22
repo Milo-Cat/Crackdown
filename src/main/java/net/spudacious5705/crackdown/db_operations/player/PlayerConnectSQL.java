@@ -1,7 +1,7 @@
-package net.spudacious5705.crackdown.DBOperations.Player;
+package net.spudacious5705.crackdown.db_operations.player;
 
 import net.minecraft.world.entity.player.Player;
-import net.spudacious5705.crackdown.DBOperations.TimestampedEntry;
+import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
 import java.sql.Connection;

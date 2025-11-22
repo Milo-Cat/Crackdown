@@ -1,10 +1,8 @@
 package net.spudacious5705.crackdown.database;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.spudacious5705.crackdown.DBOperations.SQLOperation;
-import net.spudacious5705.crackdown.DBOperations.TimestampedEntry;
+import net.spudacious5705.crackdown.db_operations.SQLOperation;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -16,9 +14,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static net.spudacious5705.crackdown.Crackdown.MODID;
 

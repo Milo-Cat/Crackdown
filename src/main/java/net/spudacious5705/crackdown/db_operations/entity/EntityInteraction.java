@@ -1,12 +1,10 @@
-package net.spudacious5705.crackdown.DBOperations.Entity;
+package net.spudacious5705.crackdown.db_operations.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.spudacious5705.crackdown.DBOperations.CommonOperations;
-import net.spudacious5705.crackdown.DBOperations.TimestampedPositionalEntry;
+import net.spudacious5705.crackdown.db_operations.CommonOperations;
+import net.spudacious5705.crackdown.db_operations.TimestampedPositionalEntry;
 import net.spudacious5705.crackdown.database.DatabaseManager;
-import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 import org.jetbrains.annotations.NotNull;
 

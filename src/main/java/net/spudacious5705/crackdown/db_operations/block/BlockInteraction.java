@@ -1,11 +1,11 @@
-package net.spudacious5705.crackdown.db_operations.Block;
+package net.spudacious5705.crackdown.db_operations.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedPositionalEntry;
 import net.spudacious5705.crackdown.database.DatabaseManager;
-import net.spudacious5705.crackdown.db_operations.Block.BlockDBHelper.BlockStateString;
+import net.spudacious5705.crackdown.db_operations.block.BlockDBHelper.BlockStateString;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -95,7 +95,7 @@ public class BlockInteraction extends TimestampedPositionalEntry {
             } else {
                 stmt.setNull(7, java.sql.Types.INTEGER);
             }//player
-            stmt.setInt(8, CommonOperations.getOrCreateId_EntityAction(action,connection));//action
+            stmt.setInt(8, CommonOperations.getOrCreateId_BlockAction(action,connection));//action
             int blockID = CommonOperations.getOrCreateId_Block(_new.block(), connection);
             stmt.setInt(9, blockID);//b new
             if(_new.state() != null){

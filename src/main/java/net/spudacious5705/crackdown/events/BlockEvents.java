@@ -11,12 +11,12 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
-import net.spudacious5705.crackdown.db_operations.Block.BlockInteraction;
-import net.spudacious5705.crackdown.db_operations.Block.BlocksExploded;
+import net.spudacious5705.crackdown.db_operations.block.BlockInteraction;
+import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
-import static net.spudacious5705.crackdown.db_operations.Block.BlockDBHelper.*;
+import static net.spudacious5705.crackdown.db_operations.block.BlockDBHelper.*;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class BlockEvents {

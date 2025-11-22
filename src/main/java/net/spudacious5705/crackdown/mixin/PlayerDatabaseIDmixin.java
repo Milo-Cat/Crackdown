@@ -5,7 +5,7 @@ import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-import static net.spudacious5705.crackdown.DBOperations.CommonOperations.getOrCreateId_Player;
+import static net.spudacious5705.crackdown.db_operations.CommonOperations.getOrCreateId_Player;
 
 @Mixin(ServerPlayer.class)
 public class PlayerDatabaseIDmixin implements GetDatabaseIdFunc {

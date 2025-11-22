@@ -1,8 +1,8 @@
-package net.spudacious5705.crackdown.DBOperations.BlockEntity;
+package net.spudacious5705.crackdown.db_operations.block_entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
-import net.spudacious5705.crackdown.DBOperations.Block.BreakBlockSQL;
+import net.spudacious5705.crackdown.db_operations.block.BreakBlockSQL;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;

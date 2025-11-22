@@ -1,19 +1,17 @@
-package net.spudacious5705.crackdown.DBOperations;
+package net.spudacious5705.crackdown.db_operations;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
-import net.spudacious5705.crackdown.DBOperations.BlockEntity.GetOrCreateBlockEntityID;
-import net.spudacious5705.crackdown.DBOperations.Entity.GetOrCreateEntityID;
-import net.spudacious5705.crackdown.DBOperations.Player.GetOrCreatePlayerID;
+import net.spudacious5705.crackdown.db_operations.block_entity.GetOrCreateBlockEntityID;
+import net.spudacious5705.crackdown.db_operations.entity.GetOrCreateEntityID;
+import net.spudacious5705.crackdown.db_operations.player.GetOrCreatePlayerID;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.events.EventsUtil;
 
@@ -46,7 +44,7 @@ public class CommonOperations {
                 n -> getOrCreateResourceId("dimension","name",n, connection));
     }
 
-    // Block
+    // block
     public static int getOrCreateId_Block(String name, Connection connection) {
         return BLOCK_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block","name",n, connection));
@@ -58,31 +56,31 @@ public class CommonOperations {
                 n -> getOrCreateResourceId("source","type",n, connection));
     }
 
-    // Block Action
+    // block Action
     public static int getOrCreateId_BlockAction(String name, Connection connection) {
         return BLOCK_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block_action_types","action",n, connection));
     }
 
-    // Block Entity
+    // block entity
     public static int getOrCreateId_BlockEntityType(String name, Connection connection) {
         return BLOCK_ENTITY_TYPE_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block_entity_type","name",n, connection));
     }
 
-    // Block Entity Action
+    // block entity Action
     public static int getOrCreateId_BlockEntityAction(String name, Connection connection) {
         return BLOCK_ENTITY_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("block_entity_action_types","action",n, connection));
     }
 
-    // Entity Action
+    // entity Action
     public static int getOrCreateId_EntityAction(String name, Connection connection) {
         return ENTITY_ACTION_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("entity_action_types","action",n, connection));
     }
 
-    // Entity
+    // entity
     public static int getOrCreateId_EntityType(String name, Connection connection) {
         return ENTITY_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("entity_type","name",n, connection));
