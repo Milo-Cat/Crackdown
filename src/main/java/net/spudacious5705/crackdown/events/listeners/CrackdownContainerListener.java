@@ -3,16 +3,10 @@ package net.spudacious5705.crackdown.events.listeners;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.spudacious5705.crackdown.DBOperations.BlockEntity.BlockEntityInteraction;
-import net.spudacious5705.crackdown.DBOperations.Entity.EntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 import org.jetbrains.annotations.NotNull;
-
-import java.lang.ref.WeakReference;
 
 public abstract class CrackdownContainerListener implements ContainerListener {
     final int playerDBID;

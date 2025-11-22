@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.spudacious5705.crackdown.DBOperations.Entity.EntityInteraction;
+import net.spudacious5705.crackdown.db_operations.Entity.EntityInteraction;
 import net.spudacious5705.crackdown.events.EventsUtil;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
