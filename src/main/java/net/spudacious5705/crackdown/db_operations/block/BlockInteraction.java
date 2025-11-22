@@ -30,8 +30,17 @@ public class BlockInteraction extends TimestampedPositionalEntry {
     }
 
 
-    public static void logPhysicsRemoved(BlockPos pos, BlockState state, String dimension) {
-
+    public static void logPhysicsRemoved(BlockPos pos, BlockState oldState, BlockState newState, String dimension) {
+        DatabaseManager.queueEntry(new BlockInteraction(
+                pos,
+                dimension,
+                "world",
+                -1,
+                "BREAK",
+                oldState,
+                newState,
+                null
+        ));
     }
 
     public static void logPlayerInteraction(BlockPos pos, String dimension, int playerID, BlockState newState, BlockState oldState, String action, String NBT) {
