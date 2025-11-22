@@ -3,8 +3,12 @@ package net.spudacious5705.crackdown.events;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.event.entity.living.LivingDestroyBlockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
@@ -29,14 +33,23 @@ public class BlockEvents {
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if(event.getPlayer() instanceof ServerPlayer player) {// OLD CODE
 
+            Level level = player.level();
+            String nbt = null;
+            if(level.getBlockState(event.getPos()).hasBlockEntity()){
+                BlockEntity be = level.getBlockEntity(event.getPos());
+                if(be != null){
+                    nbt = be.serializeNBT().toString();
+                }
+            }
+
             BlockInteraction.logPlayerInteraction(
                     event.getPos(),
-                    EventsUtil.DimensionName(player.level()),
+                    EventsUtil.DimensionName(level),
                     ((GetDatabaseIdFunc)player).crackdown$getDatabaseID(),
                     Blocks.AIR.defaultBlockState(),
                     event.getState(),
                     "BREAK",
-                    null);
+                    nbt);
 
         }
 
@@ -49,6 +62,15 @@ public class BlockEvents {
                 String dimension = EventsUtil.DimensionName(level);
                 BlockState oldState = event.getLevel().getBlockState(event.getPos());
                 BlockState newState = event.getPlacedBlock();
+
+                String nbt = null;
+                if(level.getBlockState(event.getPos()).hasBlockEntity()){
+                    BlockEntity be = level.getBlockEntity(event.getPos());
+                    if(be != null){
+                        nbt = be.serializeNBT().toString();
+                    }
+                }
+
                 BlockInteraction.logPlayerInteraction(
                         event.getPos(),
                         dimension,
@@ -56,7 +78,7 @@ public class BlockEvents {
                         newState,
                         oldState,
                         "PLACE",
-                        null);
+                        nbt);
             }
         }
     }
@@ -88,6 +110,33 @@ public class BlockEvents {
     public static void onAttackBlock(PlayerInteractEvent.LeftClickBlock event) {
         event.getEntity();//player
         event.getUseBlock();//result
+    }
+
+    @SubscribeEvent
+    public static void onNonPlayerDestroyBlock(LivingDestroyBlockEvent event) {
+        Entity entity = event.getEntity();
+
+        if(entity.level() instanceof ServerLevel level) {// OLD CODE
+
+            String nbt = null;
+            if(level.getBlockState(event.getPos()).hasBlockEntity()){
+                BlockEntity be = level.getBlockEntity(event.getPos());
+                if(be != null){
+                    nbt = be.serializeNBT().toString();
+                }
+            }
+
+            BlockInteraction.logInteraction(
+                    event.getPos(),
+                    EventsUtil.DimensionName(level),
+                    EventsUtil.entityType(entity),
+                    -1,
+                    null,
+                    event.getState(),
+                    "BREAK",
+                    nbt);
+
+        }
     }
 
 
