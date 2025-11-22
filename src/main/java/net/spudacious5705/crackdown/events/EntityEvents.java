@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
@@ -17,6 +18,8 @@ import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
+import java.util.UUID;
+
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class EntityEvents {
 
@@ -27,10 +30,11 @@ public class EntityEvents {
             Animal pet = event.getAnimal();
             String dimension = EventsUtil.DimensionName(player.level());
             BlockPos pos = EventsUtil.copyBlockPos(pet.blockPosition());
-            int petID = ((GetDatabaseIdFunc)pet).crackdown$getDatabaseID();
+            UUID petUUID = pet.getUUID();
+            String petType = EventsUtil.entityType(pet);
             int playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
 
-            EntityInteraction.log(pos,dimension,petID,"player",playerID,"TAME",null);
+            EntityInteraction.log(pos,dimension,petUUID, petType, "player",playerID,"TAME",null);
         }
     }
 
@@ -53,7 +57,7 @@ public class EntityEvents {
     }
 
     static void damagingEvent(String action, Entity victimEntity, DamageSource damageSource, float damageQuantity){
-        if(victimEntity == null)return;
+        if(victimEntity == null || victimEntity instanceof ItemEntity)return;
 
         Entity attackerEntity = damageSource.getEntity();
 
@@ -63,24 +67,22 @@ public class EntityEvents {
         } else return;
 
         BlockPos pos = EventsUtil.copyBlockPos(victimEntity.blockPosition());
-        int entityID = ((GetDatabaseIdFunc)victimEntity).crackdown$getDatabaseID();
+        UUID entityUUID = victimEntity.getUUID();
+        String entityType = EventsUtil.entityType(victimEntity);
         String source = damageSource.type().msgId();
         String damageInfo = "{\"damage_amount\": " + damageQuantity;
 
 
         if(attackerEntity instanceof ServerPlayer player){
             int playerID = ((GetDatabaseIdFunc)player).crackdown$getDatabaseID();
-            EntityInteraction.log(pos,dimension,entityID,source,playerID,action,damageInfo+"}");
+            EntityInteraction.log(pos,dimension,entityUUID, entityType, source, playerID, action,damageInfo+"}");
         } else {
             if(attackerEntity != null) {
-                String type = EventsUtil.entityType(attackerEntity);
-                damageInfo = damageInfo + ", \"attacker_entity\": \""+
-                        type
-                        +"\"}";
+                damageInfo = damageInfo + ", \"attacker_entity\": \""+entityType+"\"}";
             } else {
                 damageInfo = damageInfo + "}";
             }
-            EntityInteraction.log(pos,dimension,entityID,source,action,damageInfo);
+            EntityInteraction.log(pos,dimension,entityUUID,entityType,source,action,damageInfo);
         }
     }
 

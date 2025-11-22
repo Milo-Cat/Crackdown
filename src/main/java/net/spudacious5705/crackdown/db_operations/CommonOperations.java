@@ -2,7 +2,6 @@ package net.spudacious5705.crackdown.db_operations;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -10,15 +9,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.block_entity.GetOrCreateBlockEntityID;
-import net.spudacious5705.crackdown.db_operations.entity.GetOrCreateEntityID;
 import net.spudacious5705.crackdown.db_operations.player.GetOrCreatePlayerID;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.events.EventsUtil;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +31,8 @@ public class CommonOperations {
     private static final Map<String,Integer> BLOCK_ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
     private static final Map<String,Integer> BLOCK_ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
     private static final Map<String,Integer> ENTITY_ACTION_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String,Integer> ENTITY_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String,Integer> ENTITY_TYPE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String,Integer> ENTITY_ID_CACHE = new ConcurrentHashMap<>();
 
     // Dimension
     public static int getOrCreateId_Dimension(String name, Connection connection) {
@@ -82,7 +78,7 @@ public class CommonOperations {
 
     // entity
     public static int getOrCreateId_EntityType(String name, Connection connection) {
-        return ENTITY_CACHE.computeIfAbsent(name,
+        return ENTITY_TYPE_CACHE.computeIfAbsent(name,
                 n -> getOrCreateResourceId("entity_type","name",n, connection));
     }
 
@@ -152,6 +148,75 @@ public class CommonOperations {
         return -1;
     }
 
+
+    public static int GetOrCreateEntityID(Connection connection, String uuid, String type) {
+        return ENTITY_ID_CACHE.computeIfAbsent(type+uuid,
+                n -> {
+
+                    try {
+                        // 1) Try to select existing record
+                        String selectSql = """
+                                SELECT id, type, killed_at
+                                FROM entity
+                                WHERE uuid = ?
+                                """;
+
+                        final int currentType = CommonOperations.getOrCreateId_EntityType(type, connection);
+
+                        try (PreparedStatement statement = connection.prepareStatement(selectSql)) {
+                            statement.setString(1, uuid);
+
+                            try (ResultSet rs = statement.executeQuery()) {
+                                while (rs.next()) {
+
+                                    int id = rs.getInt("id");
+
+                                    int storedType = rs.getInt("type");
+
+                                    rs.getInt("killed_at");
+
+                                    if (!rs.wasNull()) {
+                                        continue;//Found entity is Deceased
+                                    }
+
+                                    if (currentType != storedType) {
+                                        continue;//Found entity is not of this type
+                                    }
+
+                                    //entity found
+
+                                    return id;
+                                }
+                            }
+                        }
+
+                        // 3) Not found -> insert and return generated key
+                        String insertSql = """
+                                INSERT INTO entity (uuid, type, created_at, last_backup_check_at)
+                                VALUES (?, ?, ?, ?)
+                                """;
+                        try (PreparedStatement ins = connection.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+                            ins.setString(1, uuid);
+                            ins.setInt(2, currentType);
+                            long time = DatabaseManager.timestamp();
+                            ins.setLong(3, time);
+                            ins.setLong(4, time);
+                            ins.executeUpdate();
+                            try (ResultSet keys = ins.getGeneratedKeys()) {
+                                if (keys.next()) {
+                                    return keys.getInt(1);
+                                }
+                            }
+                        }
+                        throw new SQLException("No generated entity id returned from database");
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    Crackdown.report("[CRACKDOWN] No generated entity id returned from database");
+                    return -1;
+                });
+    }
+
     // Clear caches on server lifecycle
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
@@ -171,7 +236,8 @@ public class CommonOperations {
         BLOCK_ENTITY_TYPE_CACHE.clear();
         BLOCK_ENTITY_ACTION_CACHE.clear();
         ENTITY_ACTION_CACHE.clear();
-        ENTITY_CACHE.clear();
+        ENTITY_TYPE_CACHE.clear();
+        ENTITY_ID_CACHE.clear();
     }
 
     public static int getOrCreateId_Player(ServerPlayer serverPlayer) {
@@ -182,22 +248,6 @@ public class CommonOperations {
         final CompletableFuture<Integer> future = new CompletableFuture<>();
 
         DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName,uuid.toString(), future));
-
-        try{
-            return future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static int getOrCreateId_Entity(Entity entity) {
-
-        // Capture values on the main thread
-        final UUID uuid = entity.getUUID();
-        final String type = EventsUtil.entityType(entity);
-        final CompletableFuture<Integer> future = new CompletableFuture<>();
-
-        DatabaseManager.priorityQueueEntry(new GetOrCreateEntityID(type,uuid.toString(), future));
 
         try{
             return future.get();

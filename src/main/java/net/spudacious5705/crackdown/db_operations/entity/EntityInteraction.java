@@ -9,24 +9,24 @@ import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
+import java.util.UUID;
 
 public class EntityInteraction extends TimestampedPositionalEntry {
-    final int entityID;
+    final UUID entityUUID;
+    final String entityType;
     final String source;
     final int playerID;
     final String action;
     final String info;
 
-    public static void log(@NotNull BlockPos pos, @NotNull String dimension, int entityID, @NotNull String source, int playerID, @NotNull String action, @Nullable String info){
+    public static void log(@NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, int playerID, @NotNull String action, @Nullable String info){
         DatabaseManager.queueEntry(
                 new EntityInteraction(
                         pos,
                         dimension,
-                        entityID,
+                        entityUUID,
+                        entityType,
                         source,
                         playerID,
                         action,
@@ -35,20 +35,21 @@ public class EntityInteraction extends TimestampedPositionalEntry {
         );
     }
 
-    public static void log(@NotNull BlockPos pos, @NotNull String dimension, int entityID, @NotNull String source, @NotNull String action, @Nullable String info){
-        log(pos,dimension,entityID,source,-1,action,info);
+    public static void log(@NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, @NotNull String action, @Nullable String info){
+        log(pos,dimension,entityUUID, entityType, source,-1,action,info);
     }
 
-    protected EntityInteraction(@NotNull BlockPos pos, @NotNull String dimension, int entityID, @NotNull String source, int playerID, @NotNull String action, @Nullable String info) {
+    protected EntityInteraction(@NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, int playerID, @NotNull String action, @Nullable String info) {
         super(pos, dimension);
-        this.entityID = entityID;
+        this.entityUUID = entityUUID;
+        this.entityType = entityType;
         this.source = source;
         this.playerID = playerID;
         this.action = action;
         this.info = info;
     }
 
-    public static void logItemCountChange(int slotIndex, String interaction, int count, int entityID, int playerID, ItemStack stack, BlockPos blockPos, String dimension) {
+    public static void logItemCountChange(int slotIndex, String interaction, int count, UUID entityUUID, String entityType, int playerID, ItemStack stack, BlockPos blockPos, String dimension) {
         String item = stack.getItem().toString();
         String nbt = "";
         if(stack.hasTag()){
@@ -57,7 +58,8 @@ public class EntityInteraction extends TimestampedPositionalEntry {
         DatabaseManager.queueEntry(new EntityInteraction(
                 blockPos,
                 dimension,
-                entityID,
+                entityUUID,
+                entityType,
                 "player",
                 playerID,
                 interaction,
@@ -65,7 +67,7 @@ public class EntityInteraction extends TimestampedPositionalEntry {
         ));
     }
 
-    public static void logItemSwap(int slotIndex, int entityID, int playerID, ItemStack stackNew, ItemStack stackOld, BlockPos blockPos, String dimension) {
+    public static void logItemSwap(int slotIndex, UUID entityUUID, String entityType, int playerID, ItemStack stackNew, ItemStack stackOld, BlockPos blockPos, String dimension) {
         String itemOld = stackOld.getItem().toString();
         String nbtOld = "";
         if(stackOld.hasTag()){
@@ -79,7 +81,8 @@ public class EntityInteraction extends TimestampedPositionalEntry {
         DatabaseManager.queueEntry(new EntityInteraction(
                 blockPos,
                 dimension,
-                entityID,
+                entityUUID,
+                entityType,
                 "player",
                 playerID,
                 ItemStackChangeType.SWAPPED.name(),
@@ -91,6 +94,9 @@ public class EntityInteraction extends TimestampedPositionalEntry {
 
     @Override
     public void accept(Connection connection) {
+        int entityID;
+        entityID = CommonOperations.GetOrCreateEntityID(connection,entityUUID.toString(),entityType);
+        if(entityID <0) return;
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """

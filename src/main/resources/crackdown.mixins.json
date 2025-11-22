@@ -6,7 +6,6 @@
   "refmap": "crackdown.refmap.json",
   "mixins": [
     "BlockEntityDatabaseIDmixin",
-    "EntityDatabaseIDmixin",
     "LevelMixin",
     "PlayerDatabaseIDmixin"
   ],

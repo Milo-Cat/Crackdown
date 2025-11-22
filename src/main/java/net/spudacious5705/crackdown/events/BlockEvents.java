@@ -1,5 +1,6 @@
 package net.spudacious5705.crackdown.events;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
@@ -15,6 +16,9 @@ import net.spudacious5705.crackdown.db_operations.block.BlockInteraction;
 import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
+
+import java.util.List;
+import java.util.regex.Matcher;
 
 import static net.spudacious5705.crackdown.db_operations.block.BlockDBHelper.*;
 
@@ -100,14 +104,37 @@ public class BlockEvents {
             final long timestamp = DatabaseManager.timestamp();
             final String dimension = EventsUtil.DimensionName(level);
 
-            AffectedBlock[] affectedBlocks =
-                    event.getAffectedBlocks().stream().map((pos) ->
-                CreateAffectedBlock(
-                        pos, level.getBlockState(pos)
-                )
-            ).toArray(AffectedBlock[]::new);
+            List<BlockPos> positions = event.getAffectedBlocks();
 
-            new BlocksExploded(timestamp,dimension,affectedBlocks);
+            int size = positions.size();
+
+            final String[] blocks = new String[size];
+            final String[] states = new String[size];
+            final int[] x = new int[size];
+            final int[] y = new int[size];
+            final int[] z = new int[size];
+
+
+
+            for (int i = 0; i < positions.size(); i++) {
+                BlockPos pos = positions.get(i);
+
+                Matcher matcher = pattern.matcher(level.getBlockState(pos).toString());
+
+                if (matcher.matches()) {
+                    //group 1 is usually just "Block". and is always block for blockState
+                    int bar = i;
+                    blocks[bar] = matcher.group(2); // inside ()
+                    states[bar] = matcher.group(3); // inside []
+                    x[bar] = pos.getX();
+                    y[bar] = pos.getY();
+                    z[bar] = pos.getZ();
+                }
+                i++;
+
+            }
+
+            new BlocksExploded(timestamp,dimension,size, blocks, states, x,y,z);
         }
     }
 }
