@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Objects;
 
 public class BlockEntityInteraction extends TimestampedEntry {
     final int thisID;
@@ -103,6 +104,22 @@ public class BlockEntityInteraction extends TimestampedEntry {
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("[CRACKDOWN] Failed to prepare insert statement for entity_interaction", e);
+        }
+        if(Objects.equals(action, "KILLED")){
+            try {
+                PreparedStatement stmt = connection.prepareStatement(
+                        """
+                        UPDATE block_entity
+                        SET destroyed_at = ?
+                        WHERE id = ?
+                        """
+                );
+                stmt.setLong(1, timestamp);
+                stmt.setInt(2, thisID);
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException("[CRACKDOWN] Failed to prepare update statement for block_entity", e);
+            }
         }
     }
 }
