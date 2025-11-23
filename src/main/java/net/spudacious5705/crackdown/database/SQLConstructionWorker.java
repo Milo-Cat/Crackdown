@@ -12,6 +12,10 @@ class SQLConstructionWorker extends Thread {
 
     private volatile boolean running = true;
 
+    SQLConstructionWorker(){
+        this.start();
+    }
+
     @Override
     public void run() {
         while (running) {
