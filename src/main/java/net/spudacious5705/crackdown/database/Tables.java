@@ -6,7 +6,8 @@ public enum Tables {
             """
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             uuid TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            info TEXT
             """),
 
     PLAYER_EVENTS(
