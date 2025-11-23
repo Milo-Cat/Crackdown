@@ -94,13 +94,15 @@ public class EntityEvents {
 
     @SubscribeEvent
     public static void onInteractEntity(PlayerInteractEvent.EntityInteractSpecific event) {
-        int playerID = GetDatabaseIdFunc.getDatabaseID(event.getEntity());
-        Entity entity = event.getTarget();//entity
+        if(event.getEntity() instanceof ServerPlayer player) {
+            int playerID = GetDatabaseIdFunc.getDatabaseID(player);
+            Entity entity = event.getTarget();//entity
 
-        if (event.getLevel() instanceof ServerLevel level) {
-            CompoundTag tagSnapshot = entity.serializeNBT();
-            //execute at end of tick
-            level.getServer().execute(() -> checkInteraction(level, playerID, entity, tagSnapshot));
+            if (event.getLevel() instanceof ServerLevel level) {
+                CompoundTag tagSnapshot = entity.serializeNBT();
+                //execute at end of tick
+                level.getServer().execute(() -> checkInteraction(level, playerID, entity, tagSnapshot));
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,6 +41,11 @@ public interface EventsUtil {
 
     static String blockType(Block block) {
         ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+        return key != null ? key.toString() : "UNREGISTERED";
+    }
+
+    static String itemType(Item item) {
+        ResourceLocation key = ForgeRegistries.ITEMS.getKey(item);
         return key != null ? key.toString() : "UNREGISTERED";
     }
 

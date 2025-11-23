@@ -37,7 +37,7 @@ public class EntityRideTracker<T extends Entity> {
     }
 
     private boolean tick() {
-        if (++timer % 4 == 0) {
+        if (++timer % 12 == 0) {
             return updateTracker();
         }
         return false;//DON'T REMOVE

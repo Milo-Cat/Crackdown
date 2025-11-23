@@ -1,7 +1,7 @@
 package net.spudacious5705.crackdown.db_operations.player;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedPositionalEntry;
@@ -24,7 +24,7 @@ public class PlayerActivity extends TimestampedPositionalEntry {
         this.info = info;
     }
 
-    public static void log(Player player, String action, BlockPos pos, String dimension, String info){
+    public static void log(ServerPlayer player, String action, BlockPos pos, String dimension, String info){
         DatabaseManager.queueEntry(
                 new PlayerActivity(
                         GetDatabaseIdFunc.getDatabaseID(player),

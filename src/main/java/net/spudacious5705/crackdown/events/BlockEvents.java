@@ -132,9 +132,9 @@ public class BlockEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onToolModifiesBlock(BlockEvent.BlockToolModificationEvent event) {
-        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level) {
+        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level && event.getPlayer() instanceof ServerPlayer player) {
             BlockInteraction.logPlayerInteraction(event.getPos(), EventsUtil.DimensionName(level),
-                    GetDatabaseIdFunc.getDatabaseID(event.getPlayer()),
+                    GetDatabaseIdFunc.getDatabaseID(player),
                     event.getFinalState(),
                     event.getState(),
                     event.getToolAction().name(), null);

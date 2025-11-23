@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
+import net.spudacious5705.crackdown.events.EventsUtil;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 
 import java.sql.Connection;
@@ -39,7 +40,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
     }
 
     public static void logItemCountChange(int slotIndex, ItemStackChangeType interaction, int count, int blockEntityID, int playerID, ItemStack stack) {
-        String item = stack.getItem().toString();
+        String item = EventsUtil.itemType(stack.getItem());
         String nbt = "";
         if (stack.hasTag()) {
             nbt = ", \"item_nbt\": \"" + stack.getTag() + "\"";
@@ -54,7 +55,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
     }
 
     public static void logItemSwap(int slotIndex, int blockEntityID, int playerID, ItemStack stackNew, ItemStack stackOld) {
-        String itemOld = stackOld.getItem().toString();
+        String itemOld = EventsUtil.itemType(stackOld.getItem());
         String nbtOld = "";
         if (stackOld.hasTag()) {
             nbtOld = ", \"item_nbt\": \"" + stackOld.getTag() + "\"";
@@ -63,7 +64,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
         if (stackNew.hasTag()) {
             nbtNew = ", \"item_nbt\": \"" + stackNew.getTag() + "\"";
         }
-        String itemNew = stackNew.getItem().toString();
+        String itemNew = EventsUtil.itemType(stackNew.getItem());
         DatabaseManager.queueEntry(new BlockEntityInteraction(
                 blockEntityID,
                 "player",
