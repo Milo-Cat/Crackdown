@@ -3,7 +3,7 @@ package net.spudacious5705.crackdown.logging;
 public enum ItemStackChangeType {
     REMOVED("removed",1),
     ADDED("added",3),
-    SWAPPED("swapped",2);//todo should count as removed and added in search. SEARCH >1 removed. SEARCH <3 added.
+    SWAPPED("swapped",2);
 
     final String name;
     final int databaseID;
