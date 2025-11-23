@@ -33,7 +33,7 @@ public class PlayerEvents {
                     if(server != null){
                         server.getCommands().performPrefixedCommand(source,"/openguiscreen welcome_screen");
                     } else {
-                        Crackdown.report("[CRACKDOWN] Failed to open rules screen");
+                        Crackdown.report("Failed to open rules screen");
                     }
                 }
             }

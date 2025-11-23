@@ -40,7 +40,7 @@ public class Crackdown {
     }
 
     public static void report(String r) {
-        LOGGER.info("BREAK CAUSED BY {}", r);
+        LOGGER.info("[CRACKDOWN] {}", r);
     }
 
     public static void reportError(String r) {
