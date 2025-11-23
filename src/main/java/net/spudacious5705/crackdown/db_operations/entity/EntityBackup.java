@@ -1,7 +1,6 @@
 package net.spudacious5705.crackdown.db_operations.entity;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtIo;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
@@ -9,8 +8,6 @@ import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.rowset.serial.SerialBlob;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.*;
 import java.util.UUID;
 
@@ -68,14 +65,8 @@ public class EntityBackup extends TimestampedEntry {
         }
 
         //serialise data
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        try {
-            NbtIo.writeCompressed(data, stream); // writes in GZIP format
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        byte[] raw = stream.toByteArray();
+        byte[] raw = BackupUtil.write(data);
         byte[] checksum = BackupUtil.checksum(raw);
 
         if(backupFound) {
@@ -103,6 +94,7 @@ public class EntityBackup extends TimestampedEntry {
             } catch (SQLException e) {
                 throw new RuntimeException("[CRACKDOWN] Failed to find entity by ID", e);
             }
+
 
             if (BackupUtil.compareChecksums(oldChecksum, checksum)) {
                 //checksum matches. Update lastCheckedTime and finish
