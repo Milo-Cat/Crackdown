@@ -126,7 +126,7 @@ public class BlockEntityBackup extends TimestampedEntry {
             PreparedStatement stmt = connection.prepareStatement(
                     """
                             INSERT INTO block_backup_record(
-                            entity,
+                            block_entity,
                             created_at,
                             compression,
                             checksum
