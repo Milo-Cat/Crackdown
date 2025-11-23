@@ -20,13 +20,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
+import net.spudacious5705.crackdown.db_operations.NBTComparisonConstructor;
 import net.spudacious5705.crackdown.db_operations.block.BlockInteraction;
 import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityBackup;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityInteraction;
+import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 
 import static net.spudacious5705.crackdown.db_operations.block.BlockDBHelper.pattern;
@@ -195,7 +198,6 @@ public class BlockEvents {
         BlockEntity be = level.getBlockEntity(pos);
         int beID = GetDatabaseIdFunc.getDatabaseID(blockEntity);
         String action;
-        String info = null;
         if (be != null) {
             CompoundTag newSnapshot = be.serializeNBT();
             if (be == blockEntity) {
@@ -204,8 +206,13 @@ public class BlockEvents {
                 }
                 action = "DATA_MODIFIED";
                 BlockEntityBackup.save(beID, newSnapshot, false);
-                CompoundTag diff = EventsUtil.findDifference(newSnapshot, tagSnapshot);//todo OFFLOAD difference finding to 3rd thread
-                info = diff.getAsString();
+
+                Consumer<String> logger = (info) ->
+                        BlockEntityInteraction.log(beID, "player", GetDatabaseIdFunc.getDatabaseID(player), action, info);
+
+                NBTComparisonConstructor.queue(logger, newSnapshot, tagSnapshot);
+                return;
+
             } else {
                 action = "REPLACED";
                 BlockEntityBackup.save(beID, tagSnapshot, true);
@@ -214,7 +221,7 @@ public class BlockEvents {
             action = "REMOVED";
             BlockEntityBackup.save(beID, tagSnapshot, true);
         }
-        BlockEntityInteraction.log(beID, "player", GetDatabaseIdFunc.getDatabaseID(player), action, info);
+        BlockEntityInteraction.log(beID, "player", GetDatabaseIdFunc.getDatabaseID(player), action, null);
 
     }
 

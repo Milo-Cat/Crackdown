@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.entity.EntityBackup;
-import net.spudacious5705.crackdown.db_operations.entity.EntityBackupConstructor;
+import net.spudacious5705.crackdown.db_operations.NBTComparisonConstructor;
 import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
 import net.spudacious5705.crackdown.events.listeners.EntityRideTracker;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
@@ -125,7 +125,7 @@ public class EntityEvents {
                 info
         );
 
-        EntityBackupConstructor.queue(
+        NBTComparisonConstructor.queue(
                 logger,
                 newSnapshot,
                 tagSnapshot
