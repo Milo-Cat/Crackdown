@@ -73,7 +73,6 @@ public class GetOrCreatePlayerID extends SQLOperation {
                 try (ResultSet keys = ins.getGeneratedKeys()) {
                     if (keys.next()) {
                         futureID.complete(keys.getInt(1));
-                        return;
                     } else {
                         futureID.completeExceptionally(new SQLException("[CRACKDOWN] No generated player id returned from database"));
                     }
@@ -82,10 +81,6 @@ public class GetOrCreatePlayerID extends SQLOperation {
         } catch (Exception e) {
             futureID.completeExceptionally(e);
         }
-
-        var ex = new SQLException("[CRACKDOWN] Player entry failed to be found/generated");
-        futureID.completeExceptionally(ex);
-        futureINFO.completeExceptionally(ex);
     }
 
 }
