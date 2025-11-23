@@ -1,6 +1,7 @@
 package net.spudacious5705.crackdown.db_operations;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -12,6 +13,7 @@ import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.block_entity.GetOrCreateBlockEntityID;
 import net.spudacious5705.crackdown.db_operations.player.GetOrCreatePlayerID;
 import net.spudacious5705.crackdown.events.EventsUtil;
+import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 
 import java.sql.*;
 import java.util.Map;
@@ -286,15 +288,25 @@ public class CommonOperations {
         // Capture values on the main thread
         final UUID uuid = serverPlayer.getUUID();
         final String trueName = serverPlayer.getName().getString();
-        final CompletableFuture<Integer> future = new CompletableFuture<>();
+        final CompletableFuture<Integer> futureID = new CompletableFuture<>();
+        final CompletableFuture<CompoundTag> futureINFO = new CompletableFuture<>();
 
-        DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName, uuid.toString(), future));
+        DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName, uuid.toString(), futureID, futureINFO));
 
         try {
-            return future.get();
+            CompoundTag info = futureINFO.get();
+            PlayerInfoFuc playerInfo = (PlayerInfoFuc) serverPlayer;
+            playerInfo.crackdown$update(info);
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        try {
+            return futureID.get();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static int getOrCreateId_BlockEntity(BlockEntity blockEntity) {

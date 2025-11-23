@@ -1,19 +1,24 @@
 package net.spudacious5705.crackdown.db_operations.player;
 
+import net.minecraft.nbt.CompoundTag;
+import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
 
+import java.io.InputStream;
 import java.sql.*;
 import java.util.concurrent.CompletableFuture;
 
 public class GetOrCreatePlayerID extends SQLOperation {
     final String trueName;
     final String uuid;
-    final CompletableFuture<Integer> future;
+    final CompletableFuture<Integer> futureID;
+    final CompletableFuture<CompoundTag> futureINFO;
 
-    public GetOrCreatePlayerID(String name, String uuid, CompletableFuture<Integer> future) {
+    public GetOrCreatePlayerID(String name, String uuid, CompletableFuture<Integer> futureID, CompletableFuture<CompoundTag> futureINFO) {
         this.trueName = name;
         this.uuid = uuid;
-        this.future = future;
+        this.futureID = futureID;
+        this.futureINFO = futureINFO;
     }
 
     @Override
@@ -22,7 +27,7 @@ public class GetOrCreatePlayerID extends SQLOperation {
         try {
             // 1) Try to select existing record
             String selectSql = """
-                    SELECT id, name
+                    SELECT id, name, info
                     FROM players
                     WHERE uuid = ?
                     """;
@@ -32,6 +37,8 @@ public class GetOrCreatePlayerID extends SQLOperation {
                     if (rs.next()) {
                         int id = rs.getInt("id");
                         String existingName = rs.getString("name");
+                        InputStream info = rs.getBlob("info").getBinaryStream();
+                        futureINFO.complete(BackupUtil.read(info));
 
                         // 2) Update name if changed (do this before completing the future)
                         if (!trueName.equals(existingName)) {
@@ -47,13 +54,14 @@ public class GetOrCreatePlayerID extends SQLOperation {
                             }
                         }
 
-                        future.complete(id);
+                        futureID.complete(id);
                         return;
                     }
                 }
             }
 
             // 3) Not found -> insert and return generated key
+            futureINFO.complete(null);
             String insertSql = """
                     INSERT INTO players (uuid, name)
                     VALUES (?, ?)
@@ -64,17 +72,19 @@ public class GetOrCreatePlayerID extends SQLOperation {
                 ins.executeUpdate();
                 try (ResultSet keys = ins.getGeneratedKeys()) {
                     if (keys.next()) {
-                        future.complete(keys.getInt(1));
+                        futureID.complete(keys.getInt(1));
                     } else {
-                        future.completeExceptionally(new SQLException("No generated player id returned from database"));
+                        futureID.completeExceptionally(new SQLException("[CRACKDOWN] No generated player id returned from database"));
                     }
                 }
             }
         } catch (Exception e) {
-            future.completeExceptionally(e);
+            futureID.completeExceptionally(e);
         }
 
-        future.completeExceptionally(new SQLException("No generated player id returned from database"));
+        var ex = new SQLException("[CRACKDOWN] Player entry failed to be found/generated");
+        futureID.completeExceptionally(ex);
+        futureINFO.completeExceptionally(ex);
     }
 
 }

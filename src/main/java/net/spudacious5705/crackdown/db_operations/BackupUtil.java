@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtIo;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -38,9 +39,9 @@ public interface BackupUtil {
         return stream.toByteArray();
     }
 
-    static CompoundTag read(byte[] data){
+    static CompoundTag read(InputStream data){
         try {
-            return NbtIo.readCompressed(new ByteArrayInputStream(data));
+            return NbtIo.readCompressed(data);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

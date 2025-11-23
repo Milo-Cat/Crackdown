@@ -1,6 +1,7 @@
 package net.spudacious5705.crackdown.events;
 
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -12,13 +13,24 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.player.PlayerActivity;
+import net.spudacious5705.crackdown.db_operations.player.PlayerINFO;
+import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class PlayerEvents {
+
+    static final String acceptedRulesKey = "accepted_rules";
+
     @SubscribeEvent
     public static void onPlayerJoin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             PlayerActivity.log(player,"JOIN", player.blockPosition(), EventsUtil.DimensionName(player.level()),null);
+            CompoundTag info = ((PlayerInfoFuc)player).crackdown$get();
+            if(info != null && info.contains(acceptedRulesKey)){
+                if(!info.getBoolean(acceptedRulesKey)){
+                    //TODO popup rules screen... somehow
+                }
+            }
         }
     }
 
@@ -26,6 +38,7 @@ public class PlayerEvents {
     public static void onPlayerLeave(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             PlayerActivity.log(player,"LEAVE", player.blockPosition(), EventsUtil.DimensionName(player.level()),null);
+            PlayerINFO.update(player, ((PlayerInfoFuc)player).crackdown$get());
         }
     }
 
