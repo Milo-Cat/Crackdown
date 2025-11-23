@@ -10,6 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
+import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityBackup;
 import net.spudacious5705.crackdown.db_operations.block_entity.GetOrCreateBlockEntityID;
 import net.spudacious5705.crackdown.db_operations.player.GetOrCreatePlayerID;
 import net.spudacious5705.crackdown.events.EventsUtil;
@@ -219,9 +220,9 @@ public class CommonOperations {
                         }
                         throw new SQLException("No generated entity id returned from database");
                     } catch (SQLException e) {
-                        e.printStackTrace();
+                        Crackdown.report("Failed to get or generate entity ID");
                     }
-                    Crackdown.report("[CRACKDOWN] No generated entity id returned from database");
+                    Crackdown.report("No generated entity id returned from database");
                     return -1;
                 });
     }
@@ -287,14 +288,26 @@ public class CommonOperations {
         final BlockPos pos = blockEntity.getBlockPos();
         final String type = EventsUtil.blockEntityType(blockEntity);
         final CompletableFuture<Integer> future = new CompletableFuture<>();
-        final CompletableFuture<Integer> needsBackup = new CompletableFuture<>();
+        final CompletableFuture<Boolean> needsBackup = new CompletableFuture<>();
 
         DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos, dimension, type, future, needsBackup));
 
+        boolean backup = false;
+        int id;
         try {
-            return future.get();
+            id = future.get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+        try {
+            backup = needsBackup.get();
+        } catch (ExecutionException | InterruptedException e) {
+            Crackdown.reportError("Failed to retrieve response for block entity needs backup");
+        }
+
+        if(backup){
+            BlockEntityBackup.save(id, blockEntity.serializeNBT(), true);
+        }
+        return id;
     }
 }

@@ -1,14 +1,15 @@
 package net.spudacious5705.crackdown.db_operations.block_entity;
 
 import net.minecraft.core.BlockPos;
+import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
-import net.spudacious5705.crackdown.db_operations.SQLOperation;
+import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 
 import java.sql.*;
 import java.util.concurrent.CompletableFuture;
 
-public class GetOrCreateBlockEntityID extends SQLOperation {
+public class GetOrCreateBlockEntityID extends TimestampedEntry {
     final String type;
     final String dimension;
     final BlockPos pos;
@@ -65,6 +66,7 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
                         if (currentType != storedType) {
                             continue;//Found block entity was not of this type
                         }
+                        future.complete(id);
 
                         //entity found
 
@@ -72,13 +74,17 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
 
                         if (rs.wasNull()) {
                             needsBackup.complete(true);
+                        } else if(lastBackupTime + Crackdown.BACKUP_INTERVAL > timestamp){
+                            needsBackup.complete(true);
+                        } else {
+                            needsBackup.complete(false);
                         }
-
-                        future.complete(id);
                         return;
                     }
                 }
             }
+
+            needsBackup.complete(true);
 
             // 3) Not found -> insert and return generated key
             String insertSql = """
@@ -105,6 +111,7 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
             }
         } catch (Exception e) {
             future.completeExceptionally(e);
+            needsBackup.complete(false);
         }
 
         future.completeExceptionally(new SQLException("No generated entity id returned from database"));
