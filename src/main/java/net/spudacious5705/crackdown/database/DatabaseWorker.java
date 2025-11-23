@@ -10,8 +10,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
-import static com.mojang.text2speech.Narrator.LOGGER;
-
 public class DatabaseWorker extends Thread {
 
     final BlockingQueue<Consumer<Connection>> queue = new LinkedBlockingQueue<>();
