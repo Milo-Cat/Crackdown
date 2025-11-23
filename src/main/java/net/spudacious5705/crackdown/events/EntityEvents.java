@@ -10,6 +10,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.living.AnimalTameEvent;
+import net.minecraftforge.event.entity.living.BabyEntitySpawnEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -135,7 +136,7 @@ public class EntityEvents {
 
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();
         if (!event.getLevel().isClientSide) {
@@ -149,6 +150,6 @@ public class EntityEvents {
                     null
             );
         }
-    }
+    }*/
 
 }
