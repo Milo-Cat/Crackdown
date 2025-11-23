@@ -132,15 +132,13 @@ public class EntityBackup extends TimestampedEntry {
                             INSERT INTO entity_backup_record(
                             entity,
                             created_at,
-                            compression,
                             checksum
                             ) VALUES (?, ?, ?, ?)
                             """
             );
             stmt.setInt(1, entityID);
             stmt.setLong(2, timestamp);
-            stmt.setInt(3, CommonOperations.getOrCreateId_Compression("DEFAULT", "0", connection));
-            stmt.setBytes(4, checksum);
+            stmt.setBytes(3, checksum);
             stmt.executeUpdate();
             try (ResultSet keys = stmt.getGeneratedKeys()) {
                 if (keys.next()) {

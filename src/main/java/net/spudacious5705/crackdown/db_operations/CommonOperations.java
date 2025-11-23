@@ -157,39 +157,6 @@ public class CommonOperations {
         return -1;
     }
 
-    public static int getOrCreateId_Compression(String name, String version, Connection connection) {
-
-        String selectSql = "SELECT id FROM compression_type WHERE name = ? AND version = ?";
-        try (PreparedStatement select = connection.prepareStatement(selectSql)) {
-            select.setString(1, name);
-            select.setString(2, version);
-            try (ResultSet rs = select.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("id");
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        // ITEM NOT FOUND, GENERATING NEW ENTRY
-        String insertSql = "INSERT INTO compression_type(name, version) VALUES (?, ?)";
-        try (PreparedStatement insert = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            insert.setString(1, name);
-            insert.setString(2, version);
-            insert.executeUpdate();
-            try (ResultSet keys = insert.getGeneratedKeys()) {
-                if (keys.next()) {
-                    return keys.getInt(1);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return -1;
-    }
-
 
     public static int GetOrCreateEntityID(Connection connection, String uuid, String type, boolean findDeceased) {
         return ENTITY_ID_CACHE.computeIfAbsent(type + uuid,

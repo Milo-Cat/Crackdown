@@ -3,7 +3,6 @@ package net.spudacious5705.crackdown.db_operations.block_entity;
 import net.minecraft.nbt.CompoundTag;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
-import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 import org.jetbrains.annotations.NotNull;
 
@@ -128,15 +127,13 @@ public class BlockEntityBackup extends TimestampedEntry {
                             INSERT INTO block_backup_record(
                             block_entity,
                             created_at,
-                            compression,
                             checksum
-                            ) VALUES (?, ?, ?, ?)
+                            ) VALUES (?, ?, ?)
                             """
             );
             stmt.setInt(1, thisID);
             stmt.setLong(2, timestamp);
-            stmt.setInt(3, CommonOperations.getOrCreateId_Compression("DEFAULT", "0", connection));
-            stmt.setBytes(4, checksum);
+            stmt.setBytes(3, checksum);
             stmt.executeUpdate();
             try (ResultSet keys = stmt.getGeneratedKeys()) {
                 if (keys.next()) {
