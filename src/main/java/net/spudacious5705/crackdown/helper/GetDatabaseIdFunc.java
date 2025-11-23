@@ -10,7 +10,7 @@ public interface GetDatabaseIdFunc {
     }
 
     static int getDatabaseID(ServerPlayer subject) {
-        return ((GetDatabaseIdFunc) subject).crackdown$getDatabaseID();
+        return ((PlayerInfoFuc) subject).crackdown$getDatabaseID();
     }
 
     int crackdown$getDatabaseID();

@@ -1,12 +1,16 @@
 package net.spudacious5705.crackdown.db_operations.player;
 
 import net.minecraft.nbt.CompoundTag;
+import net.spudacious5705.crackdown.Crackdown;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
 
 import java.io.InputStream;
 import java.sql.*;
 import java.util.concurrent.CompletableFuture;
+
+import static net.spudacious5705.crackdown.Crackdown.reportError;
 
 public class GetOrCreatePlayerID extends SQLOperation {
     final String trueName;
@@ -37,8 +41,13 @@ public class GetOrCreatePlayerID extends SQLOperation {
                     if (rs.next()) {
                         int id = rs.getInt("id");
                         String existingName = rs.getString("name");
-                        InputStream info = rs.getBlob("info").getBinaryStream();
-                        futureINFO.complete(BackupUtil.read(info));
+                        InputStream info = rs.getBinaryStream("info");
+                        if(rs.wasNull()||info==null){
+                            futureINFO.complete(null);
+                        } else {
+                            futureINFO.complete(BackupUtil.read(info));
+                        }
+
 
                         futureID.complete(id);
 
@@ -53,11 +62,17 @@ public class GetOrCreatePlayerID extends SQLOperation {
                                 ups.setString(1, trueName);
                                 ups.setInt(2, id);
                                 ups.executeUpdate();
+                            } catch (SQLException e){
+                                reportError("Failed to prepare insert statement for player activity");
                             }
                         }
                         return;
                     }
+                } catch (SQLException e){
+                    reportError("Error retrieving player record");
                 }
+            } catch (SQLException e){
+                reportError("Failed to set select statement for player records");
             }
 
             // 3) Not found -> insert and return generated key
@@ -80,6 +95,7 @@ public class GetOrCreatePlayerID extends SQLOperation {
             }
         } catch (Exception e) {
             futureID.completeExceptionally(e);
+            futureINFO.completeExceptionally(e);
         }
     }
 

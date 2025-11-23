@@ -250,7 +250,7 @@ public class CommonOperations {
         PLAYER_ACTION_CACHE.clear();
     }
 
-    public static int getOrCreateId_Player(ServerPlayer serverPlayer) {
+    public static int getOrCreateId_Player(ServerPlayer serverPlayer, PlayerInfoFuc serverPlayerOriginal) {
 
         // Capture values on the main thread
         final UUID uuid = serverPlayer.getUUID();
@@ -262,15 +262,17 @@ public class CommonOperations {
 
         try {
             CompoundTag info = futureINFO.get();
-            PlayerInfoFuc playerInfo = (PlayerInfoFuc) serverPlayer;
-            playerInfo.crackdown$update(info);
+            serverPlayerOriginal.crackdown$update(info);
         } catch (ExecutionException | InterruptedException e) {
+            futureINFO.completeExceptionally(e);
+            futureID.completeExceptionally(e);
             throw new RuntimeException(e);
         }
 
         try {
             return futureID.get();
         } catch (ExecutionException | InterruptedException e) {
+            futureID.completeExceptionally(e);
             throw new RuntimeException(e);
         }
 
@@ -285,8 +287,9 @@ public class CommonOperations {
         final BlockPos pos = blockEntity.getBlockPos();
         final String type = EventsUtil.blockEntityType(blockEntity);
         final CompletableFuture<Integer> future = new CompletableFuture<>();
+        final CompletableFuture<Integer> needsBackup = new CompletableFuture<>();
 
-        DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos, dimension, type, future));
+        DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos, dimension, type, future, needsBackup));
 
         try {
             return future.get();

@@ -1,13 +1,13 @@
 package net.spudacious5705.crackdown.db_operations.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 import org.jetbrains.annotations.NotNull;
 
-import javax.sql.rowset.serial.SerialBlob;
 import java.sql.*;
 import java.util.UUID;
 
@@ -70,7 +70,7 @@ public class EntityBackup extends TimestampedEntry {
         byte[] checksum = BackupUtil.checksum(raw);
 
         if(backupFound) {
-            if (!forceBackup && lastBackup + 3600 > timestamp) {
+            if (!forceBackup && lastBackup + Crackdown.BACKUP_INTERVAL > timestamp) {
                 return;//too soon for hourly backup
             }
 
@@ -117,14 +117,6 @@ public class EntityBackup extends TimestampedEntry {
             }
         }
 
-        //save Backup
-        Blob blob;
-        try {
-            blob = new SerialBlob(raw);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
         int recordID;
         try {
             PreparedStatement stmt = connection.prepareStatement(
@@ -133,7 +125,7 @@ public class EntityBackup extends TimestampedEntry {
                             entity,
                             created_at,
                             checksum
-                            ) VALUES (?, ?, ?, ?)
+                            ) VALUES (?, ?, ?)
                             """
             );
             stmt.setInt(1, entityID);
@@ -156,7 +148,7 @@ public class EntityBackup extends TimestampedEntry {
                             """
             );
             stmt.setInt(1, recordID);
-            stmt.setBlob(2, blob);
+            stmt.setBytes(2, raw);
             stmt.executeUpdate();
 
         } catch (SQLException e) {

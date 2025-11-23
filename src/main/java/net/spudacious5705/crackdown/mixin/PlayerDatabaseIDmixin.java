@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 import static net.spudacious5705.crackdown.db_operations.CommonOperations.getOrCreateId_Player;
 
 @Mixin(ServerPlayer.class)
-public class PlayerDatabaseIDmixin implements GetDatabaseIdFunc, PlayerInfoFuc {
+public class PlayerDatabaseIDmixin implements PlayerInfoFuc {
     @Unique
     private int crackdown$databaseID = -1;
 
@@ -21,7 +21,7 @@ public class PlayerDatabaseIDmixin implements GetDatabaseIdFunc, PlayerInfoFuc {
     @Override
     public synchronized int crackdown$getDatabaseID() {
         if (crackdown$databaseID < 0) {
-            crackdown$databaseID = getOrCreateId_Player((ServerPlayer) (Object) this);
+            crackdown$databaseID = getOrCreateId_Player((ServerPlayer) (Object) this, this);
         }
         return crackdown$databaseID;
     }

@@ -1,6 +1,7 @@
 package net.spudacious5705.crackdown.db_operations.block_entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
@@ -64,7 +65,7 @@ public class BlockEntityBackup extends TimestampedEntry {
 
 
         if(backupFound) {
-            if (!forceBackup && lastBackup + 3600 > timestamp) {
+            if (!forceBackup && lastBackup + Crackdown.BACKUP_INTERVAL > timestamp) {
                 return;//too soon for hourly backup
             }
 
@@ -111,15 +112,6 @@ public class BlockEntityBackup extends TimestampedEntry {
             }
         }
 
-
-        //saving new backup
-        Blob blob;
-        try {
-            blob = new SerialBlob(raw);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
         int recordID;
         try {
             PreparedStatement stmt = connection.prepareStatement(
@@ -151,7 +143,7 @@ public class BlockEntityBackup extends TimestampedEntry {
                             """
             );
             stmt.setInt(1, recordID);
-            stmt.setBlob(2, blob);
+            stmt.setBytes(2, raw);
             stmt.executeUpdate();
 
         } catch (SQLException e) {

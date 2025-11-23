@@ -13,12 +13,14 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
     final String dimension;
     final BlockPos pos;
     final CompletableFuture<Integer> future;
+    final CompletableFuture<Boolean> needsBackup;
 
-    public GetOrCreateBlockEntityID(BlockPos pos, String dimension, String type, CompletableFuture<Integer> future) {
+    public GetOrCreateBlockEntityID(BlockPos pos, String dimension, String type, CompletableFuture<Integer> future, CompletableFuture<Boolean> needsBackup) {
         this.type = type;
         this.dimension = dimension;
         this.pos = pos;
         this.future = future;
+        this.needsBackup = needsBackup;
     }
 
     @Override
@@ -68,10 +70,8 @@ public class GetOrCreateBlockEntityID extends SQLOperation {
 
                         long lastBackupTime = rs.getLong("last_backup_check_at");
 
-                        if (!rs.wasNull()) {
-                            //backup immediately
-                        } else if (lastBackupTime == 0) {//todo check backup time
-                            //backup
+                        if (rs.wasNull()) {
+                            needsBackup.complete(true);
                         }
 
                         future.complete(id);

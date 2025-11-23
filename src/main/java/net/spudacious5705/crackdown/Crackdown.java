@@ -26,6 +26,7 @@ public class Crackdown {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "crackdown";
+    public static final long BACKUP_INTERVAL = 3600L;
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -40,6 +41,10 @@ public class Crackdown {
 
     public static void report(String r) {
         LOGGER.info("BREAK CAUSED BY {}", r);
+    }
+
+    public static void reportError(String r) {
+        LOGGER.error("[CRACKDOWN] {}", r);
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

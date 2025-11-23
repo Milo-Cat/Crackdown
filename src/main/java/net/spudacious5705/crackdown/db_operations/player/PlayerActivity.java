@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedPositionalEntry;
-import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
+import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +27,7 @@ public class PlayerActivity extends TimestampedPositionalEntry {
     public static void log(ServerPlayer player, String action, BlockPos pos, String dimension, String info){
         DatabaseManager.queueEntry(
                 new PlayerActivity(
-                        GetDatabaseIdFunc.getDatabaseID(player),
+                        PlayerInfoFuc.getDatabaseID(player),
                         action,
                         pos,
                         dimension,

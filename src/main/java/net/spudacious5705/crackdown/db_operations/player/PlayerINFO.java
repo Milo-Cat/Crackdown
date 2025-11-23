@@ -6,6 +6,7 @@ import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
+import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 
 import javax.sql.rowset.serial.SerialBlob;
 import java.sql.Blob;
@@ -26,7 +27,7 @@ public class PlayerINFO extends SQLOperation {
         if(info != null) {
             DatabaseManager.queueEntry(
                     new PlayerINFO(
-                            GetDatabaseIdFunc.getDatabaseID(player),
+                            PlayerInfoFuc.getDatabaseID(player),
                             info
                     )
             );
