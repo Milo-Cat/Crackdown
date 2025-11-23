@@ -65,25 +65,4 @@ public class Crackdown {
     public void onServerStopped(ServerStoppedEvent event) {
         DatabaseManager.serverStopped();
     }
-
-    @SubscribeEvent
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        event.getDispatcher().register(
-                Commands.literal("accept_rules")
-                        .executes((ctx) -> {
-                            if(ctx.getSource().getEntity() instanceof ServerPlayer player){
-                                var p =((PlayerInfoFuc)player);
-                                CompoundTag tag = p.crackdown$get();
-                                if(tag == null){
-                                    tag = new CompoundTag();
-                                }
-                                tag.putBoolean(acceptedRulesKey, true);
-                                p.crackdown$update(tag);
-                                LOGGER.info("PLayer {} accepted the rules", player.getName());
-                                return 1;
-                            }
-                            return 0;
-                        })
-        );
-    }
 }

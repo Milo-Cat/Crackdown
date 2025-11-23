@@ -25,17 +25,16 @@ public class PlayerEvents {
     public static void onPlayerJoin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             PlayerActivity.log(player,"JOIN", player.blockPosition(), EventsUtil.DimensionName(player.level()),null);
+
             CompoundTag info = ((PlayerInfoFuc)player).crackdown$get();
-            if(info != null && info.contains(acceptedRulesKey)){
-                if(!info.getBoolean(acceptedRulesKey)){
-                    var source = player.createCommandSourceStack();
-                    var server = player.getServer();
-                    if(server != null){
-                        server.getCommands().performPrefixedCommand(source,"/openguiscreen welcome_screen");
-                    } else {
-                        Crackdown.report("Failed to open rules screen");
-                    }
-                }
+            if(info != null && info.contains(acceptedRulesKey) && info.getBoolean(acceptedRulesKey)) return;//end early if player has already accepted rules
+
+            var source = player.createCommandSourceStack();
+            var server = player.getServer();
+            if(server != null){
+                server.getCommands().performPrefixedCommand(source,"/openguiscreen welcome_screen");
+            } else {
+                Crackdown.report("Failed to open rules screen");
             }
         }
     }
