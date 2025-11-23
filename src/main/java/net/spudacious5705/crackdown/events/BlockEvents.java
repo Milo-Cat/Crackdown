@@ -25,7 +25,6 @@ import net.spudacious5705.crackdown.db_operations.block.BlockInteraction;
 import net.spudacious5705.crackdown.db_operations.block.BlocksExploded;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityBackup;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityInteraction;
-import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
 import java.util.List;
