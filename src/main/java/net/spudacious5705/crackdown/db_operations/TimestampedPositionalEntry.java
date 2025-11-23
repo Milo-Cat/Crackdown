@@ -11,4 +11,10 @@ public abstract class TimestampedPositionalEntry extends TimestampedEntry {
         this.blockPos = pos;
     }
 
+    protected TimestampedPositionalEntry(long timestamp, BlockPos pos, String dimension) {
+        super(timestamp);
+        this.dimension = dimension;
+        this.blockPos = pos;
+    }
+
 }

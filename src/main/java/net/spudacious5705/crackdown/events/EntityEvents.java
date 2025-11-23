@@ -15,12 +15,15 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.spudacious5705.crackdown.Crackdown;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.entity.EntityBackup;
+import net.spudacious5705.crackdown.db_operations.entity.EntityBackupConstructor;
 import net.spudacious5705.crackdown.db_operations.entity.EntityInteraction;
 import net.spudacious5705.crackdown.events.listeners.EntityRideTracker;
 import net.spudacious5705.crackdown.helper.GetDatabaseIdFunc;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class EntityEvents {
@@ -108,10 +111,10 @@ public class EntityEvents {
 
     private static void checkInteraction(ServerLevel level, int playerID, Entity entity, CompoundTag tagSnapshot) {
         CompoundTag newSnapshot = entity.serializeNBT();
-        CompoundTag diff = EventsUtil.findDifference(newSnapshot, tagSnapshot);
-        String info = diff.toString();//todo OFFLOAD difference finding to 3rd thread
-        EntityBackup.save(entity,newSnapshot, false);
+
+        Consumer<String> logger = (info) ->
         EntityInteraction.log(
+                DatabaseManager.timestamp(),
                 entity.blockPosition(),
                 EventsUtil.DimensionName(level),
                 entity.getUUID(),
@@ -121,6 +124,15 @@ public class EntityEvents {
                 "INTERACT",
                 info
         );
+
+        EntityBackupConstructor.queue(
+                logger,
+                newSnapshot,
+                tagSnapshot
+        );
+
+        EntityBackup.save(entity.getUUID(), EventsUtil.entityType(entity),newSnapshot, false);
+
     }
 
     @SubscribeEvent

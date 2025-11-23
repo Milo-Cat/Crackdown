@@ -34,6 +34,33 @@ public class EntityInteraction extends TimestampedPositionalEntry {
         this.info = info;
     }
 
+    protected EntityInteraction(long timestamp, @NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, int playerID, @NotNull String action, @Nullable String info) {
+        super(timestamp, pos, dimension);
+        this.entityUUID = entityUUID;
+        this.entityType = entityType;
+        this.source = source;
+        this.playerID = playerID;
+        this.action = action;
+        this.info = info;
+    }
+
+    public static void log(long timestamp, @NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, int playerID, @NotNull String action, @Nullable String info) {
+        if (Objects.equals(entityType, "minecraft:item")) return;
+        DatabaseManager.queueEntry(
+                new EntityInteraction(
+                        timestamp,
+                        pos,
+                        dimension,
+                        entityUUID,
+                        entityType,
+                        source,
+                        playerID,
+                        action,
+                        info
+                )
+        );
+    }
+
     public static void log(@NotNull BlockPos pos, @NotNull String dimension, UUID entityUUID, String entityType, @NotNull String source, int playerID, @NotNull String action, @Nullable String info) {
         if (Objects.equals(entityType, "minecraft:item")) return;
         DatabaseManager.queueEntry(

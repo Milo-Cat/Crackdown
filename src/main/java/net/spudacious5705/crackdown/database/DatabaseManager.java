@@ -22,6 +22,7 @@ public class DatabaseManager {
     static Logger LOGGER;
 
     private static DatabaseWorker worker;
+    private static SQLConstructionWorker constructor;
 
     public static void init(ServerStartingEvent event, Logger logger) {
         LOGGER = logger;
@@ -70,6 +71,7 @@ public class DatabaseManager {
             }
 
             worker = new DatabaseWorker(connection);
+            constructor = new SQLConstructionWorker();
         }
     }
 
@@ -100,6 +102,12 @@ public class DatabaseManager {
         }
     }
 
+    public static <E extends Runnable> void queueWork(E entry) {
+        if (isConnected()) {
+            constructor.queue.add(entry);
+        }
+    }
+
     public static <E extends SQLOperation> void priorityQueueEntry(E entry) {
         if (isConnected()) {
             worker.priorityQueue.add(entry);
@@ -118,6 +126,7 @@ public class DatabaseManager {
     }
 
     public static void shutdown() {
+        constructor.shutdown();
         try {
             if (isConnected()) {
                 worker.shutdown();

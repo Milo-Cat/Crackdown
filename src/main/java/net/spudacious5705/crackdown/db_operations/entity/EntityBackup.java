@@ -2,12 +2,10 @@ package net.spudacious5705.crackdown.db_operations.entity;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.world.entity.Entity;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
-import net.spudacious5705.crackdown.events.EventsUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.rowset.serial.SerialBlob;
@@ -30,10 +28,10 @@ public class EntityBackup extends TimestampedEntry {
     }
 
 
-    public static void save(Entity entity, @NotNull CompoundTag data, boolean force) {
+    public static void save(UUID uuid, String entityType, @NotNull CompoundTag data, boolean force) {
         DatabaseManager.queueEntry(new EntityBackup(
-                entity.getUUID(),
-                EventsUtil.entityType(entity),
+                uuid,
+                entityType,
                 data,
                 force
         ));
