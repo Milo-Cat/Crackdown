@@ -1,6 +1,8 @@
 package net.spudacious5705.crackdown.database;
 
 
+import net.spudacious5705.crackdown.Crackdown;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
@@ -54,14 +56,14 @@ public class DatabaseWorker extends Thread {
                     sleep(50);
                 }
             } catch (InterruptedException e) {
-                LOGGER.warn("[CRACKDOWN] DatabaseWorker interrupted", e);
+                Crackdown.report("DatabaseWorker interrupted");
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
                 // catch-all so a single bad task never kills the worker
-                LOGGER.error("[CRACKDOWN] Unhandled error in DatabaseWorker task", e);
+                Crackdown.reportError("Unhandled error in DatabaseWorker task");
             }
         }
-        LOGGER.warn("[CRACKDOWN] DatabaseWorker thread stopped abruptly.");
+        Crackdown.report("DatabaseWorker thread stopped abruptly.");
         try {
             connection.close();
         } catch (SQLException ignored) {}
@@ -73,7 +75,7 @@ public class DatabaseWorker extends Thread {
             connection.commit();
             connection.close();
         } catch (SQLException ignored) {}
-        LOGGER.info("[CRACKDOWN] DatabaseWorker thread safely stopped.");
+        Crackdown.report("DatabaseWorker thread safely stopped.");
         if(hasShutdown != null){
             hasShutdown.complete(true);
         }
