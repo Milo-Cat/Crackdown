@@ -25,7 +25,7 @@ public class PlayerINFO extends SQLOperation {
 
     public static void update(ServerPlayer player, CompoundTag info) {
         if(info != null) {
-            DatabaseManager.queueEntry(
+            DatabaseManager.priorityQueueEntry(
                     new PlayerINFO(
                             PlayerInfoFuc.getDatabaseID(player),
                             info
@@ -36,12 +36,8 @@ public class PlayerINFO extends SQLOperation {
 
     @Override
     public void accept(Connection connection) {
-        Blob blob;
-        try {
-            blob = new SerialBlob(BackupUtil.write(info));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        byte[] raw = BackupUtil.write(info);
+
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
@@ -50,7 +46,7 @@ public class PlayerINFO extends SQLOperation {
                             WHERE id = ?
                             """
             );
-            stmt.setBlob(1, blob);
+            stmt.setBytes(1, raw);
             stmt.setInt(2, playerID);
             stmt.executeUpdate();
         } catch (SQLException e) {
