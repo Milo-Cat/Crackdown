@@ -19,7 +19,7 @@ import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 @Mod.EventBusSubscriber(modid = Crackdown.MODID)
 public class PlayerEvents {
 
-    static final String acceptedRulesKey = "accepted_rules";
+    public static final String acceptedRulesKey = "accepted_rules";
 
     @SubscribeEvent
     public static void onPlayerJoin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
@@ -28,7 +28,13 @@ public class PlayerEvents {
             CompoundTag info = ((PlayerInfoFuc)player).crackdown$get();
             if(info != null && info.contains(acceptedRulesKey)){
                 if(!info.getBoolean(acceptedRulesKey)){
-                    //TODO popup rules screen... somehow
+                    var source = player.createCommandSourceStack();
+                    var server = player.getServer();
+                    if(server != null){
+                        server.getCommands().performPrefixedCommand(source,"/openguiscreen welcome_screen");
+                    } else {
+                        Crackdown.report("[CRACKDOWN] Failed to open rules screen");
+                    }
                 }
             }
         }
