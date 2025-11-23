@@ -39,14 +39,14 @@ public class DatabaseWorker extends Thread {
                     task.accept(connection);
                 }
             } catch (InterruptedException e) {
-                LOGGER.warn("DatabaseWorker interrupted", e);
+                LOGGER.warn("[CRACKDOWN] DatabaseWorker interrupted", e);
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
                 // catch-all so a single bad task never kills the worker
-                LOGGER.error("Unhandled error in DatabaseWorker task", e);
+                LOGGER.error("[CRACKDOWN] Unhandled error in DatabaseWorker task", e);
             }
         }
-        LOGGER.info("DatabaseWorker thread stopped.");
+        LOGGER.info("[CRACKDOWN] DatabaseWorker thread stopped.");
     }
 
     public void shutdown() throws SQLException {
