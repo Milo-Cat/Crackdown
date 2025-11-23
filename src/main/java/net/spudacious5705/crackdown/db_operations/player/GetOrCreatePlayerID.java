@@ -40,6 +40,8 @@ public class GetOrCreatePlayerID extends SQLOperation {
                         InputStream info = rs.getBlob("info").getBinaryStream();
                         futureINFO.complete(BackupUtil.read(info));
 
+                        futureID.complete(id);
+
                         // 2) Update name if changed (do this before completing the future)
                         if (!trueName.equals(existingName)) {
                             String updateSql = """
@@ -53,8 +55,6 @@ public class GetOrCreatePlayerID extends SQLOperation {
                                 ups.executeUpdate();
                             }
                         }
-
-                        futureID.complete(id);
                         return;
                     }
                 }
@@ -73,6 +73,7 @@ public class GetOrCreatePlayerID extends SQLOperation {
                 try (ResultSet keys = ins.getGeneratedKeys()) {
                     if (keys.next()) {
                         futureID.complete(keys.getInt(1));
+                        return;
                     } else {
                         futureID.completeExceptionally(new SQLException("[CRACKDOWN] No generated player id returned from database"));
                     }
