@@ -38,6 +38,7 @@ public class BlockEntityBackup extends TimestampedEntry {
     public void accept(Connection connection) {
         long lastBackup;
         int lastBackupID;
+        boolean backupFound;
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
@@ -51,6 +52,7 @@ public class BlockEntityBackup extends TimestampedEntry {
             if (rs.next()) {
                 lastBackup = rs.getLong("last_backup_check_at");
                 lastBackupID = rs.getInt("last_backup_id");
+                backupFound = !rs.wasNull();
             } else {
                 throw new SQLException("[CRACKDOWN] Failed to find block entity by ID");
             }
@@ -59,31 +61,7 @@ public class BlockEntityBackup extends TimestampedEntry {
             throw new RuntimeException("[CRACKDOWN] Failed to find block entity by ID", e);
         }
 
-        if (!forceBackup && lastBackup + 3600 > timestamp) {
-            return;//too soon for hourly backup
-        }
-
-        byte[] oldChecksum;
-        try {
-            PreparedStatement stmt = connection.prepareStatement(
-                    """
-                            SELECT checksum
-                            FROM block_backup_record
-                            WHERE id=?
-                            """
-            );
-            stmt.setInt(1, lastBackupID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                oldChecksum = rs.getBytes("checksum");
-            } else {
-                throw new SQLException("[CRACKDOWN] Failed to find block entity by ID");
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("[CRACKDOWN] Failed to find block entity by ID", e);
-        }
-
+        //serialise new data
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
         try {
@@ -94,26 +72,57 @@ public class BlockEntityBackup extends TimestampedEntry {
         byte[] raw = stream.toByteArray();
         byte[] checksum = BackupUtil.checksum(raw);
 
-        if (BackupUtil.compareChecksums(oldChecksum, checksum)) {
-            //checksum matches. Update lastCheckedTime
+
+        if(backupFound) {
+            if (!forceBackup && lastBackup + 3600 > timestamp) {
+                return;//too soon for hourly backup
+            }
+
+            byte[] oldChecksum;
+
             try {
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                                UPDATE block_entity
-                                SET last_backup_check_at = ?
-                                WHERE id = ?
+                                SELECT checksum
+                                FROM block_backup_record
+                                WHERE id=?
                                 """
                 );
-                stmt.setLong(1, timestamp);
-                stmt.setInt(2, thisID);
-                stmt.executeUpdate();
+                stmt.setInt(1, lastBackupID);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    oldChecksum = rs.getBytes("checksum");
+                } else {
+                    throw new SQLException("[CRACKDOWN] Failed to find block entity by ID");
+                }
 
             } catch (SQLException e) {
-                throw new RuntimeException("[CRACKDOWN] Failed to update last backup time for block entity", e);
+                throw new RuntimeException("[CRACKDOWN] Failed to find block entity by ID", e);
             }
-            return;
+
+            if (BackupUtil.compareChecksums(oldChecksum, checksum)) {
+                //checksum matches. Update lastCheckedTime and finish
+                try {
+                    PreparedStatement stmt = connection.prepareStatement(
+                            """
+                                    UPDATE block_entity
+                                    SET last_backup_check_at = ?
+                                    WHERE id = ?
+                                    """
+                    );
+                    stmt.setLong(1, timestamp);
+                    stmt.setInt(2, thisID);
+                    stmt.executeUpdate();
+
+                } catch (SQLException e) {
+                    throw new RuntimeException("[CRACKDOWN] Failed to update last backup time for block entity", e);
+                }
+                return;
+            }
         }
 
+
+        //saving new backup
         Blob blob;
         try {
             blob = new SerialBlob(raw);
