@@ -4,8 +4,8 @@ package net.spudacious5705.crackdown.database;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
@@ -17,6 +17,17 @@ public class DatabaseWorker extends Thread {
     final BlockingQueue<Consumer<Connection>> priorityQueue = new LinkedBlockingQueue<>();
 
     private volatile boolean running = true;
+    private volatile boolean shutdownRequested = false;
+
+    private CompletableFuture<Boolean> hasShutdown = null;
+    public void requestShutdown(CompletableFuture<Boolean> hasShutdown) {
+        shutdownRequested = true;
+        this.hasShutdown = hasShutdown;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
 
     private final Connection connection;
 
@@ -32,10 +43,15 @@ public class DatabaseWorker extends Thread {
             try {
                 Consumer<Connection> task = priorityQueue.poll();
                 if (task == null) {
-                    task = queue.poll(50, TimeUnit.MILLISECONDS);
+                    task = queue.poll();
                 }
                 if (task != null) {
                     task.accept(connection);
+                } else if(shutdownRequested){
+                    safeShutdown();
+                    return;
+                } else {
+                    sleep(50);
                 }
             } catch (InterruptedException e) {
                 LOGGER.warn("[CRACKDOWN] DatabaseWorker interrupted", e);
@@ -45,13 +61,31 @@ public class DatabaseWorker extends Thread {
                 LOGGER.error("[CRACKDOWN] Unhandled error in DatabaseWorker task", e);
             }
         }
-        LOGGER.info("[CRACKDOWN] DatabaseWorker thread stopped.");
+        LOGGER.warn("[CRACKDOWN] DatabaseWorker thread stopped abruptly.");
+        try {
+            connection.close();
+        } catch (SQLException ignored) {}
     }
 
-    public void shutdown() throws SQLException {
+    private void safeShutdown(){
         running = false;
-        connection.close();
+        try {
+            connection.commit();
+            connection.close();
+        } catch (SQLException ignored) {}
+        LOGGER.info("[CRACKDOWN] DatabaseWorker thread safely stopped.");
+        if(hasShutdown != null){
+            hasShutdown.complete(true);
+        }
+    }
+
+    public void forceShutdown() throws SQLException {
         this.interrupt();
+        running = false;
+        try {
+            connection.commit();
+        } catch (SQLException ignored) {}
+        connection.close();
     }
 
     public boolean isConnected() {

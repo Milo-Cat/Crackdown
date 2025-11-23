@@ -2,6 +2,7 @@ package net.spudacious5705.crackdown.database;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
 import org.slf4j.Logger;
 
@@ -14,6 +15,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static net.spudacious5705.crackdown.Crackdown.MODID;
 
@@ -46,10 +51,8 @@ public class DatabaseManager {
             LOGGER.info("[CRACKDOWN] database connected at{}", url);
 
         } catch (SQLException e) {
-            LOGGER.error("[CRACKDOWN] Failed to connect to database. Stopping Server.");
-            e.printStackTrace();
             event.getServer().stopServer();
-            return;
+            throw new RuntimeException("[CRACKDOWN] Failed to connect to database. Stopping Server.");
         }
 
         if (connection != null) {
@@ -70,6 +73,7 @@ public class DatabaseManager {
                 }
             }
 
+            hasShutdown = new CompletableFuture<>();//for safer shutdowns
             worker = new DatabaseWorker(connection);
             constructor = new SQLConstructionWorker();
         }
@@ -114,27 +118,27 @@ public class DatabaseManager {
         }
     }
 
+    private static CompletableFuture<Boolean> hasShutdown;
     public static void serverStopping() {
-        //todo pretty much nothing. Event handlers should send on shutdown database writes.
-        // CANCEL ANY QUERIES
+        worker.requestShutdown(hasShutdown);
     }
 
     public static void serverStopped() {
-        //todo tell worker to shutdown when it comes to a wait (no more operations)
-        // forcibly shutdown after some time if process is frozen
         shutdown();
     }
 
     public static void shutdown() {
         constructor.shutdown();
         try {
-            if (isConnected()) {
-                worker.shutdown();
-                System.out.println("[CRACKDOWN] SQLite connection closed.");
+            if (worker.isRunning()) {
+                try {
+                    hasShutdown.get(2500, TimeUnit.MILLISECONDS);
+                } catch (RuntimeException | InterruptedException | ExecutionException | TimeoutException ignored) {}
+                worker.forceShutdown();
             }
+            Crackdown.report("SQLite connection closed.");
         } catch (SQLException e) {
-            System.err.println("[CRACKDOWN] Error closing database:");
-            e.printStackTrace();
+            throw new RuntimeException("[CRACKDOWN] Error closing database:", e);
         }
     }
 
