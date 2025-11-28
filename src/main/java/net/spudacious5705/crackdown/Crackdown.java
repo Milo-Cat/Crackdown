@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -57,12 +58,19 @@ public class Crackdown {
     }
 
     @SubscribeEvent
-    public void onServerStopping(ServerStoppingEvent event) {
+    public static void onServerStopping(ServerStoppingEvent event) {
         DatabaseManager.serverStopping();
     }
 
     @SubscribeEvent
-    public void onServerStopped(ServerStoppedEvent event) {
+    public static void onServerStopped(ServerStoppedEvent event) {
         DatabaseManager.serverStopped();
+    }
+
+    @SubscribeEvent
+    public static void tick(TickEvent.ServerTickEvent event){
+        if(event.side.isServer()){
+            DatabaseManager.readSearchResults();
+        }
     }
 }
