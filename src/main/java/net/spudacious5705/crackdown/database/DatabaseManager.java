@@ -4,6 +4,7 @@ import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
+import net.spudacious5705.crackdown.db_operations.SQLSearchResult;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -15,10 +16,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 import static net.spudacious5705.crackdown.Crackdown.MODID;
 
@@ -28,6 +27,7 @@ public class DatabaseManager {
 
     private static DatabaseWorker worker;
     private static SQLConstructionWorker constructor;
+
 
     public static void init(ServerStartingEvent event, Logger logger) {
         LOGGER = logger;
@@ -142,4 +142,14 @@ public class DatabaseManager {
         }
     }
 
+    static final BlockingQueue<SQLSearchResult> searchQueue = new LinkedBlockingQueue<>();
+
+
+    public static void readSearchResults() {
+        SQLSearchResult result = searchQueue.poll();
+        while (result != null){
+            result.complete();
+            result = searchQueue.poll();
+        }
+    }
 }
