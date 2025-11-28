@@ -104,7 +104,6 @@ public enum Tables {
             action VARCHAR(24) NOT NULL UNIQUE
             """),
 
-    //todo make sure block entites are given DB_IDs
     BLOCK_ENTITY(
             "block_entity",
             """
