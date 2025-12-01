@@ -80,9 +80,7 @@ public class GetOrCreateBlockEntityID extends TimestampedEntry {
 
                         final int dbID = id;
                         final boolean forceBackup = needsBackup;
-                        DatabaseManager.addRunnableToUpdateQueue(() -> {
-                            BlockEntityIDManager.setDatabaseID(tempID, dbID, forceBackup);
-                        });
+                        BlockEntityIDManager.gotDatabaseID(tempID, dbID, forceBackup);
                         return;
                     }
                 }
@@ -106,9 +104,7 @@ public class GetOrCreateBlockEntityID extends TimestampedEntry {
                 try (ResultSet keys = ins.getGeneratedKeys()) {
                     if (keys.next()) {
                         final int dbID = keys.getInt(1);
-                        DatabaseManager.addRunnableToUpdateQueue(() -> {
-                            BlockEntityIDManager.setDatabaseID(tempID, dbID, true);
-                        });
+                        BlockEntityIDManager.gotDatabaseID(tempID, dbID, true);
                     }
                 }
             }
