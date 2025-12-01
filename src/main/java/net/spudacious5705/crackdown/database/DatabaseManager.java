@@ -104,18 +104,24 @@ public class DatabaseManager {
     public static <E extends SQLOperation> void queueEntry(E entry) {
         if (isConnected()) {
             worker.queue.add(entry);
+        } else {
+            throw new IllegalStateException("Entry Queued when database is closed");
         }
     }
 
     public static <E extends Runnable> void queueWork(E entry) {
         if (isConnected()) {
             constructor.queue.add(entry);
+        } else {
+            throw new IllegalStateException("Entry Queued when database is closed");
         }
     }
 
     public static <E extends SQLOperation> void priorityQueueEntry(E entry) {
         if (isConnected()) {
             worker.priorityQueue.add(entry);
+        } else {
+            throw new IllegalStateException("Entry Queued when database is closed");
         }
     }
 
