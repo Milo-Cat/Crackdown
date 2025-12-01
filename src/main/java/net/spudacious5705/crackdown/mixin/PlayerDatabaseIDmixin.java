@@ -27,6 +27,11 @@ public class PlayerDatabaseIDmixin implements PlayerInfoFuc {
     }
 
     @Override
+    public void crackdown$setDatabaseID(int id) {
+
+    }
+
+    @Override
     public void crackdown$update(@Nullable CompoundTag info) {
         crackdown$info = info;
     }

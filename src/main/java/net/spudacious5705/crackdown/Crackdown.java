@@ -70,7 +70,7 @@ public class Crackdown {
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event){
         if(event.side.isServer()){
-            DatabaseManager.readSearchResults();
+            DatabaseManager.onTick();
         }
     }
 }

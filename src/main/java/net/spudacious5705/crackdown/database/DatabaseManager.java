@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Executable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
@@ -144,6 +145,11 @@ public class DatabaseManager {
 
     static final BlockingQueue<SQLSearchResult> searchQueue = new LinkedBlockingQueue<>();
 
+    static final BlockingQueue<Runnable> updateQueue = new LinkedBlockingQueue<>();
+
+    public static void addRunnableToUpdateQueue(Runnable r){
+        updateQueue.add(r);
+    }
 
     public static void readSearchResults() {
         SQLSearchResult result = searchQueue.poll();
@@ -151,5 +157,18 @@ public class DatabaseManager {
             result.complete();
             result = searchQueue.poll();
         }
+    }
+
+    public static void executeUpdates() {
+        Runnable result = updateQueue.poll();
+        while (result != null){
+            result.run();
+            result = updateQueue.poll();
+        }
+    }
+
+    public static void onTick() {
+        readSearchResults();
+        executeUpdates();
     }
 }

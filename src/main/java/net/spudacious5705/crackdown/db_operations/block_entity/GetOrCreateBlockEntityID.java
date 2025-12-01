@@ -5,29 +5,30 @@ import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
+import net.spudacious5705.crackdown.helper.BlockEntityIDManager;
 
 import java.sql.*;
-import java.util.concurrent.CompletableFuture;
 
 public class GetOrCreateBlockEntityID extends TimestampedEntry {
     final String type;
     final String dimension;
     final BlockPos pos;
-    final CompletableFuture<Integer> future;
-    final CompletableFuture<Boolean> needsBackup;
+    final int tempID;
 
-    public GetOrCreateBlockEntityID(BlockPos pos, String dimension, String type, CompletableFuture<Integer> future, CompletableFuture<Boolean> needsBackup) {
+    public GetOrCreateBlockEntityID(BlockPos pos, String dimension, String type, int tempID) {
         this.type = type;
         this.dimension = dimension;
         this.pos = pos;
-        this.future = future;
-        this.needsBackup = needsBackup;
+        this.tempID = tempID;
     }
 
     @Override
     public void accept(Connection connection) {
 
         try {
+
+            int id = tempID;
+            boolean needsBackup = false;
 
             int dimensionID = CommonOperations.getOrCreateId_Dimension(dimension, connection);
 
@@ -53,7 +54,7 @@ public class GetOrCreateBlockEntityID extends TimestampedEntry {
                 try (ResultSet rs = statement.executeQuery()) {
                     while (rs.next()) {
 
-                        int id = rs.getInt("id");
+                        id = rs.getInt("id");
 
                         int storedType = rs.getInt("type");
 
@@ -66,25 +67,26 @@ public class GetOrCreateBlockEntityID extends TimestampedEntry {
                         if (currentType != storedType) {
                             continue;//Found block entity was not of this type
                         }
-                        future.complete(id);
 
                         //entity found
 
                         long lastBackupTime = rs.getLong("last_backup_check_at");
 
                         if (rs.wasNull()) {
-                            needsBackup.complete(true);
+                            needsBackup = true;
                         } else if(lastBackupTime + Crackdown.BACKUP_INTERVAL > timestamp){
-                            needsBackup.complete(true);
-                        } else {
-                            needsBackup.complete(false);
+                            needsBackup = true;
                         }
+
+                        final int dbID = id;
+                        final boolean forceBackup = needsBackup;
+                        DatabaseManager.addRunnableToUpdateQueue(() -> {
+                            BlockEntityIDManager.setDatabaseID(tempID, dbID, forceBackup);
+                        });
                         return;
                     }
                 }
             }
-
-            needsBackup.complete(true);
 
             // 3) Not found -> insert and return generated key
             String insertSql = """
@@ -103,18 +105,16 @@ public class GetOrCreateBlockEntityID extends TimestampedEntry {
                 ins.executeUpdate();
                 try (ResultSet keys = ins.getGeneratedKeys()) {
                     if (keys.next()) {
-                        future.complete(keys.getInt(1));
-                    } else {
-                        future.completeExceptionally(new SQLException("No generated entity id returned from database"));
+                        final int dbID = keys.getInt(1);
+                        DatabaseManager.addRunnableToUpdateQueue(() -> {
+                            BlockEntityIDManager.setDatabaseID(tempID, dbID, true);
+                        });
                     }
                 }
             }
-        } catch (Exception e) {
-            future.completeExceptionally(e);
-            needsBackup.complete(false);
+        } catch (Exception ignored) {
         }
 
-        future.completeExceptionally(new SQLException("No generated entity id returned from database"));
     }
 
 }

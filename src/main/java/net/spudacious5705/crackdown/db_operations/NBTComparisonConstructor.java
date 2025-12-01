@@ -16,7 +16,6 @@ public class NBTComparisonConstructor implements Runnable {
         this.logger = logger;
         this.newSnapshot = newSnapshot;
         this.oldSnapshot = oldSnapshot;
-
     }
 
     public static void queue(Consumer<String> logger, CompoundTag newSnapshot, CompoundTag oldSnapshot) {
@@ -37,5 +36,6 @@ public class NBTComparisonConstructor implements Runnable {
 
         logger.accept(diff.toString());
 
+        //todo something
     }
 }

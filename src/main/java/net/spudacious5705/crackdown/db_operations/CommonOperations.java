@@ -278,36 +278,4 @@ public class CommonOperations {
         }
 
     }
-
-    public static int getOrCreateId_BlockEntity(BlockEntity blockEntity) {
-
-        // Capture values on the main thread
-        if (blockEntity.getLevel() == null) return -1;
-        final String dimension = blockEntity.getLevel().dimension().location().toString();
-
-        final BlockPos pos = blockEntity.getBlockPos();
-        final String type = EventsUtil.blockEntityType(blockEntity);
-        final CompletableFuture<Integer> future = new CompletableFuture<>();
-        final CompletableFuture<Boolean> needsBackup = new CompletableFuture<>();
-
-        DatabaseManager.priorityQueueEntry(new GetOrCreateBlockEntityID(pos, dimension, type, future, needsBackup));
-
-        boolean backup = false;
-        int id;
-        try {
-            id = future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            backup = needsBackup.get();
-        } catch (ExecutionException | InterruptedException e) {
-            Crackdown.reportError("Failed to retrieve response for block entity needs backup");
-        }
-
-        if(backup){
-            BlockEntityBackup.save(id, blockEntity.serializeNBT(), true);
-        }
-        return id;
-    }
 }

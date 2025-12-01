@@ -14,4 +14,6 @@ public interface GetDatabaseIdFunc {
     }
 
     int crackdown$getDatabaseID();
+
+    void crackdown$setDatabaseID(int id);
 }
