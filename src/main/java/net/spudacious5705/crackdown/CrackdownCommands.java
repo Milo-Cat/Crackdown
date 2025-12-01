@@ -45,6 +45,7 @@ public class CrackdownCommands {
                         })
         );
 
+
         event.getDispatcher().register(
                 Commands.literal("crackdown")
                         .then(Commands.literal("undo_for_player")
@@ -63,7 +64,7 @@ public class CrackdownCommands {
         event.getDispatcher().register(
                 Commands.literal("crackdown")
                         .requires(source -> source.hasPermission(4))
-                        .then(Commands.literal("reload_players")
+                        .then(Commands.literal("load_player_names")
                         .executes((ctx) -> {
                             saved_player_options();
                             return 1;
