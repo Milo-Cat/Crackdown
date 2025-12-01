@@ -53,6 +53,7 @@ public class BlockEntityIDManager {
         }
     }
 
+
     private static void put(int key, BlockEntity blockEntity) {
         for (int i = 0; i < entries.size(); i++) {
             if (entries.get(i).id == key) {
@@ -89,6 +90,12 @@ public class BlockEntityIDManager {
             return thisID;
         }
         return idMap.getOrDefault(thisID, 0);
+    }
+    public static void gotDatabaseID(int tempID, int dbID, boolean doBackup){
+        idMap.put(tempID,dbID);
+        DatabaseManager.addRunnableToUpdateQueue(() -> {
+            setDatabaseID(tempID,dbID,doBackup);
+        });
     }
     static final Map<Integer,Integer> idMap = new Int2IntOpenHashMap();
 
