@@ -149,7 +149,8 @@ public enum Tables {
             
             FOREIGN KEY (source) REFERENCES source(id),
             FOREIGN KEY (action) REFERENCES block_entity_action_types(id),
-            FOREIGN KEY (block_entity) REFERENCES block_entity(id)
+            FOREIGN KEY (block_entity) REFERENCES block_entity(id),
+            FOREIGN KEY (player) REFERENCES players(id)
             """),
 
     BLOCK_ENTITY_BACKUP_RECORD(
