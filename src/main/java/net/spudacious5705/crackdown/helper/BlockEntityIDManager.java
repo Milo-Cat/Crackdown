@@ -1,16 +1,18 @@
 package net.spudacious5705.crackdown.helper;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.block_entity.BlockEntityBackup;
 import net.spudacious5705.crackdown.db_operations.block_entity.GetOrCreateBlockEntityID;
 import net.spudacious5705.crackdown.events.EventsUtil;
-import net.spudacious5705.crackdown.mixin.BlockEntityDatabaseIDmixin;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BlockEntityIDManager {
 //todo clear on server shutdown
@@ -20,7 +22,11 @@ public class BlockEntityIDManager {
 
     public static int getTempID(BlockEntity be){
 
-        if (be.getLevel() == null) return -1;
+        if (be.getLevel() == null) {
+            Crackdown.reportError("BlockEntity ID was requested for a block entity without a valid LevelAccessor");
+            Thread.dumpStack();
+            return 0;
+        }
         final String dimension = be.getLevel().dimension().location().toString();
 
         EventsUtil.DimensionName(be.getLevel());
@@ -68,5 +74,23 @@ public class BlockEntityIDManager {
         return null;
     }
 
-     record BlockEntityReference(Integer id, WeakReference<BlockEntity> subject){}
+
+    record BlockEntityReference(Integer id, WeakReference<BlockEntity> subject){}
+
+    /**
+     *
+     * Only to be used by the worker thread
+     */
+    public static int workerGetID(int thisID) {
+        if(thisID>0){
+            if(idMap.containsValue(thisID)){
+                idMap.entrySet().removeIf(e -> e.getValue().equals(thisID));
+            }
+            return thisID;
+        }
+        return idMap.getOrDefault(thisID, 0);
+    }
+    static final Map<Integer,Integer> idMap = new Int2IntOpenHashMap();
+
+
 }

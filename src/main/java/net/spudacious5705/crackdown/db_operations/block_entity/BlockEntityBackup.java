@@ -5,9 +5,9 @@ import net.spudacious5705.crackdown.Crackdown;
 import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.BackupUtil;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
+import net.spudacious5705.crackdown.helper.BlockEntityIDManager;
 import org.jetbrains.annotations.NotNull;
 
-import javax.sql.rowset.serial.SerialBlob;
 import java.sql.*;
 
 public class BlockEntityBackup extends TimestampedEntry {
@@ -33,6 +33,7 @@ public class BlockEntityBackup extends TimestampedEntry {
 
     @Override
     public void accept(Connection connection) {
+        final int ID = BlockEntityIDManager.workerGetID(thisID);
         long lastBackup;
         int lastBackupID;
         boolean backupFound;
@@ -44,7 +45,7 @@ public class BlockEntityBackup extends TimestampedEntry {
                             WHERE id=?
                             """
             );
-            stmt.setInt(1, thisID);
+            stmt.setInt(1, ID);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 lastBackup = rs.getLong("last_backup_check_at");
@@ -102,7 +103,7 @@ public class BlockEntityBackup extends TimestampedEntry {
                                     """
                     );
                     stmt.setLong(1, timestamp);
-                    stmt.setInt(2, thisID);
+                    stmt.setInt(2, ID);
                     stmt.executeUpdate();
 
                 } catch (SQLException e) {
@@ -123,7 +124,7 @@ public class BlockEntityBackup extends TimestampedEntry {
                             ) VALUES (?, ?, ?)
                             """
             );
-            stmt.setInt(1, thisID);
+            stmt.setInt(1, ID);
             stmt.setLong(2, timestamp);
             stmt.setBytes(3, checksum);
             stmt.executeUpdate();

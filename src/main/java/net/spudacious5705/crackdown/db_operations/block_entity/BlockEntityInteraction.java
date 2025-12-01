@@ -5,6 +5,7 @@ import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.TimestampedEntry;
 import net.spudacious5705.crackdown.events.EventsUtil;
+import net.spudacious5705.crackdown.helper.BlockEntityIDManager;
 import net.spudacious5705.crackdown.logging.ItemStackChangeType;
 
 import java.sql.Connection;
@@ -77,6 +78,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
 
     @Override
     public void accept(Connection connection) {
+        final int ID = BlockEntityIDManager.workerGetID(thisID);
         try {
             PreparedStatement stmt = connection.prepareStatement(
                     """
@@ -91,7 +93,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
                             """
             );
             stmt.setLong(1, timestamp);
-            stmt.setInt(2, thisID);
+            stmt.setInt(2, ID);
             stmt.setInt(3, CommonOperations.getOrCreateId_Source(source, connection));
             stmt.setInt(4, playerID);
             stmt.setInt(5, CommonOperations.getOrCreateId_BlockEntityAction(action, connection));
@@ -115,7 +117,7 @@ public class BlockEntityInteraction extends TimestampedEntry {
                                 """
                 );
                 stmt.setLong(1, timestamp);
-                stmt.setInt(2, thisID);
+                stmt.setInt(2, ID);
                 stmt.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException("[CRACKDOWN] Failed to prepare update statement for block_entity", e);
