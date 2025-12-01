@@ -47,30 +47,4 @@ public class Crackdown {
     public static void reportError(String r) {
         LOGGER.error("[CRACKDOWN] {}", r);
     }
-
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
-        LOGGER.info("CRACKDOWN says: hello!");
-        DatabaseManager.init(event, LOGGER);
-
-    }
-
-    @SubscribeEvent
-    public static void onServerStopping(ServerStoppingEvent event) {
-        DatabaseManager.serverStopping();
-    }
-
-    @SubscribeEvent
-    public static void onServerStopped(ServerStoppedEvent event) {
-        DatabaseManager.serverStopped();
-    }
-
-    @SubscribeEvent
-    public static void tick(TickEvent.ServerTickEvent event){
-        if(event.side.isServer()){
-            DatabaseManager.onTick();
-        }
-    }
 }
