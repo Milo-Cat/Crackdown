@@ -47,4 +47,13 @@ public class Crackdown {
     public static void reportError(String r) {
         LOGGER.error("[CRACKDOWN] {}", r);
     }
+
+    // You can use SubscribeEvent and let the Event Bus discover methods to call
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
+        // Do something when the server starts
+        LOGGER.info("CRACKDOWN says: hello!");
+        DatabaseManager.init(event, LOGGER);
+
+    }
 }
