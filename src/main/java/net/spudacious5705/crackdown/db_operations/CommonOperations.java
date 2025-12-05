@@ -258,8 +258,9 @@ public class CommonOperations {
         final String trueName = serverPlayer.getName().getString();
         final CompletableFuture<Integer> futureID = new CompletableFuture<>();
         final CompletableFuture<CompoundTag> futureINFO = new CompletableFuture<>();
+        final boolean doRaidMode = Crackdown.raidMode;
 
-        DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName, uuid.toString(), futureID, futureINFO));
+        DatabaseManager.priorityQueueEntry(new GetOrCreatePlayerID(trueName, uuid.toString(), futureID, futureINFO, doRaidMode));
 
         try {
             CompoundTag info = futureINFO.get();
@@ -271,7 +272,13 @@ public class CommonOperations {
         }
 
         try {
-            return futureID.get();
+            int id = futureID.get();
+            if(doRaidMode){
+                if (id == -1){
+                    serverPlayer.disconnect();
+                }
+            }
+            return id;
         } catch (ExecutionException | InterruptedException e) {
             futureID.completeExceptionally(e);
             throw new RuntimeException(e);

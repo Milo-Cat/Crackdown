@@ -17,12 +17,14 @@ public class GetOrCreatePlayerID extends SQLOperation {
     final String uuid;
     final CompletableFuture<Integer> futureID;
     final CompletableFuture<CompoundTag> futureINFO;
+    final Boolean raidMode;
 
-    public GetOrCreatePlayerID(String name, String uuid, CompletableFuture<Integer> futureID, CompletableFuture<CompoundTag> futureINFO) {
+    public GetOrCreatePlayerID(String name, String uuid, CompletableFuture<Integer> futureID, CompletableFuture<CompoundTag> futureINFO, boolean raidMode) {
         this.trueName = name;
         this.uuid = uuid;
         this.futureID = futureID;
         this.futureINFO = futureINFO;
+        this.raidMode = raidMode;
     }
 
     @Override
@@ -77,6 +79,9 @@ public class GetOrCreatePlayerID extends SQLOperation {
 
             // 3) Not found -> insert and return generated key
             futureINFO.complete(null);
+            if(raidMode){
+                futureID.complete(-1);
+            }
             String insertSql = """
                     INSERT INTO players (uuid, name)
                     VALUES (?, ?)

@@ -25,6 +25,8 @@ import static net.spudacious5705.crackdown.events.PlayerEvents.acceptedRulesKey;
 @Mod(Crackdown.MODID)
 public class Crackdown {
 
+    public static boolean raidMode = false;
+
     // Define mod id in a common place for everything to reference
     public static final String MODID = "crackdown";
     public static final long BACKUP_INTERVAL = 3600L;

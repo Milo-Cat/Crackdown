@@ -72,6 +72,21 @@ public class CrackdownCommands {
         );
 
 
+        event.getDispatcher().register(
+                Commands.literal("crackdown")
+                        .then(Commands.literal("raidMode")
+                                .requires(source -> source.hasPermission(4))
+                                .then(Commands.literal("ON")
+                                        .executes((ctx) -> {
+                                            Crackdown.raidMode = true;
+                                            return 0;
+                                        }))
+                                .then(Commands.literal("OFF")
+                                        .executes((ctx) -> {
+                                            Crackdown.raidMode = false;
+                                            return 0;
+                                        })))
+        );
     }
 
     private static double player_db_last_checked = -1;
