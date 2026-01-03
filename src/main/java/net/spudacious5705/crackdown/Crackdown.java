@@ -19,6 +19,7 @@ import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 import org.slf4j.Logger;
 
+import static net.spudacious5705.crackdown.CrackdownCommands.saved_player_options;
 import static net.spudacious5705.crackdown.events.PlayerEvents.acceptedRulesKey;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -56,6 +57,6 @@ public class Crackdown {
         // Do something when the server starts
         LOGGER.info("CRACKDOWN says: hello!");
         DatabaseManager.init(event, LOGGER);
-
+        saved_player_options();
     }
 }
