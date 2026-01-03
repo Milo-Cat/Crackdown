@@ -78,7 +78,7 @@ public class CrackdownCommands {
                         .requires(source -> source.hasPermission(4))
                         .then(
                                 Commands.literal("inspect")
-                                .then(Commands.literal("toggle_on")
+                                .then(Commands.literal("ON")
                                         .executes((ctx) -> {
                                             ServerPlayer player = ctx.getSource().getPlayerOrException();
                                             if(player instanceof PlayerInfoFuc foo){
@@ -88,7 +88,7 @@ public class CrackdownCommands {
                                             return 1;
                                         }))
 
-                                .then(Commands.literal("toggle_off")
+                                .then(Commands.literal("OFF")
                                         .executes((ctx) -> {
                                             ServerPlayer player = ctx.getSource().getPlayerOrException();
                                             if(player instanceof PlayerInfoFuc bar){
