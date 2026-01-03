@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -15,6 +16,7 @@ import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.player.GetListOfSavedPlayers;
 import net.spudacious5705.crackdown.helper.PlayerInfoFuc;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -71,6 +73,33 @@ public class CrackdownCommands {
                         }))
         );
 
+        event.getDispatcher().register(
+                Commands.literal("crackdown")
+                        .requires(source -> source.hasPermission(4))
+                        .then(
+                                Commands.literal("inspect")
+                                .then(Commands.literal("toggle_on")
+                                        .executes((ctx) -> {
+                                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                            if(player instanceof PlayerInfoFuc foo){
+                                                foo.crackdown$setInspector(true);
+                                                player.displayClientMessage(Component.literal("§2Inspect Mode ON"), true);
+                                            }
+                                            return 1;
+                                        }))
+
+                                .then(Commands.literal("toggle_off")
+                                        .executes((ctx) -> {
+                                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                            if(player instanceof PlayerInfoFuc bar){
+                                                bar.crackdown$setInspector(false);
+                                                player.displayClientMessage(Component.literal("§cInspect Mode OFF"), true);
+                                            }
+                                            return 1;
+                                        }))
+                        )
+        );
+
 
         event.getDispatcher().register(
                 Commands.literal("crackdown")
@@ -101,7 +130,7 @@ public class CrackdownCommands {
         return builder.buildFuture();
     };;
 
-    private static void saved_player_options(){
+    static void saved_player_options(){
         if(player_db_last_checked+4000 < DatabaseManager.timestamp() && DatabaseManager.isConnected()){
             player_db_last_checked = DatabaseManager.timestamp();
 
