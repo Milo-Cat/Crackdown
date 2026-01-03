@@ -1,7 +1,8 @@
 package net.spudacious5705.crackdown.db_operations.block_entity;
 
 import net.minecraft.core.BlockPos;
-import net.spudacious5705.crackdown.db_operations.PositionalResult;
+import net.spudacious5705.crackdown.lookup.BlockEntitySearchResult;
+import net.spudacious5705.crackdown.lookup.PositionalResult;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
 
 import java.sql.Connection;
@@ -48,43 +49,6 @@ public class BlockEntitySearch extends SQLOperation {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public static class BlockEntitySearchResult extends PositionalResult {
-
-        final int[] id;
-        final String[] source;
-        final String[] player_name;
-        final String[] action;
-        final String[] info;
-
-        final Consumer<BlockEntitySearchResult> complete_action;
-
-        protected BlockEntitySearchResult(
-                String[] dimension,
-                BlockPos[] blockPos,
-                int resultCount,
-                long[] timestamp,
-                int[] id,
-                String[] source,
-                String[] playerName,
-                String[] action,
-                String[] info,
-                Consumer<BlockEntitySearchResult> completeAction
-        ) {
-            super(dimension, blockPos, resultCount, timestamp);
-            this.id = id;
-            this.source = source;
-            player_name = playerName;
-            this.action = action;
-            this.info = info;
-            complete_action = completeAction;
-        }
-
-        @Override
-        public void complete() {
-            complete_action.accept(this);
         }
     }
 }
