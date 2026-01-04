@@ -1,30 +1,36 @@
 package net.spudacious5705.crackdown.db_operations.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.spudacious5705.crackdown.database.DatabaseManager;
 import net.spudacious5705.crackdown.db_operations.CommonOperations;
 import net.spudacious5705.crackdown.db_operations.SQLOperation;
 import net.spudacious5705.crackdown.lookup.BlockEntitySearchResult;
+import net.spudacious5705.crackdown.lookup.BlockInspectResult;
 
+import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+
+import static net.spudacious5705.crackdown.database.DatabaseManager.HumanReadableTimestamp;
 
 public class BlockSimpleLookup extends SQLOperation {
 
-    final Consumer<BlockEntitySearchResult> complete_action;
+    private final WeakReference<ServerPlayer> playerRef;
 
     public final BlockPos blockPos;
     public final String dimension;
 
 
-    public BlockSimpleLookup(String dimension, BlockPos blockPos, Consumer<BlockEntitySearchResult> completeAction) {
-
-        this.complete_action = completeAction;
-
+    public BlockSimpleLookup(String dimension, BlockPos blockPos, Consumer<BlockEntitySearchResult> completeAction, ServerPlayer player) {
         this.blockPos = blockPos;
         this.dimension = dimension;
+        this.playerRef = new WeakReference<>(player);
     }
 
     @Override
@@ -60,8 +66,14 @@ public class BlockSimpleLookup extends SQLOperation {
 
             ResultSet rs = stmt.executeQuery();
 
+            List<String> responses = new ArrayList<>();
+
+            int resultCount = 0;
 
             while (rs.next()) {
+
+                resultCount++;
+
                 long timestamp = rs.getLong(1);
                 String sourceType = rs.getString(2);
                 String playerName = rs.getString(3);
@@ -71,10 +83,28 @@ public class BlockSimpleLookup extends SQLOperation {
                 String newBlock = rs.getString(7);
                 String newState = rs.getString(8);
 
-                //(timestamp, sourceType, playerName, actionName, oldBlock, oldState, newBlock, newState);
+                String response =
+                        String.join("  ",
+
+                        HumanReadableTimestamp(timestamp),
+                        sourceType,
+                        playerName,
+                        actionName,
+                        oldBlock,
+                        oldState,
+                        newBlock,
+                        newState
+                );
+
+                responses.add(response);
+
             }
 
+            DatabaseManager.searchQueue.add(
 
+                new BlockInspectResult(resultCount, responses, playerRef)
+
+            );
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
