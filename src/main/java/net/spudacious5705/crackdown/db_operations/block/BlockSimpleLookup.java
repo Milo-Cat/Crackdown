@@ -86,14 +86,15 @@ public class BlockSimpleLookup extends SQLOperation {
                 String response =
                         String.join("  ",
 
+                        "§e",
                         HumanReadableTimestamp(timestamp),
                         sourceType,
                         playerName,
+                        "\n§f",
                         actionName,
                         oldBlock,
-                        oldState,
                         newBlock,
-                        newState
+                        "\n§0--------------------"
                 );
 
                 responses.add(response);
