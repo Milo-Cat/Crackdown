@@ -27,7 +27,7 @@ public class BlockSimpleLookup extends SQLOperation {
     public final String dimension;
 
 
-    public BlockSimpleLookup(String dimension, BlockPos blockPos, Consumer<BlockEntitySearchResult> completeAction, ServerPlayer player) {
+    public BlockSimpleLookup(String dimension, BlockPos blockPos, ServerPlayer player) {
         this.blockPos = blockPos;
         this.dimension = dimension;
         this.playerRef = new WeakReference<>(player);
