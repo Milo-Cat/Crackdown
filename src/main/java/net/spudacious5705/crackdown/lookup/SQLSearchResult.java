@@ -1,12 +1,10 @@
 package net.spudacious5705.crackdown.lookup;
 
 public abstract class SQLSearchResult {
-    final int resultCount;
-    public final long[] timestamp;
+    protected final int resultCount;
 
-    protected SQLSearchResult(int resultCount, long[] timestamp) {
+    protected SQLSearchResult(int resultCount) {
         this.resultCount = resultCount;
-        this.timestamp = timestamp;
     }
 
     /**
