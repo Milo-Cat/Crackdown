@@ -1,5 +1,6 @@
 package net.spudacious5705.crackdown.lookup;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.lang.ref.WeakReference;
@@ -16,7 +17,13 @@ public class BlockInspectResult extends SQLSearchResult{
     }
 
     @Override
-    public void complete() {
+    public void complete() {//process the response on game thread
+        ServerPlayer player = playerRef.get();
+        if(player == null) return;
 
+        int loopCount = Math.min(resultCount, 8);
+        for(int i = 0; i<loopCount; i++) {
+            player.displayClientMessage(Component.literal(results.get(i)), false);
+        }
     }
 }
