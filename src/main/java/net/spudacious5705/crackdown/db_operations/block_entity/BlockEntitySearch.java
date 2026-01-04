@@ -29,13 +29,13 @@ public class BlockEntitySearch extends SQLOperation {
     public void accept(Connection connection) {
         try {
             PreparedStatement stmt = connection.prepareStatement("""
-                    SELECT d.name, b.x, b.y, b.z, i.timestamp, b.id, s.type, p.name, a.action, i.info
-                    FROM block_entity_interaction AS i
-                    LEFT JOIN block_entity AS b ON i.block_entity = b.id
-                    LEFT JOIN dimension AS d ON b.dimension = d.id
-                    LEFT JOIN source AS s ON i.source = s.id
-                    LEFT JOIN players AS p ON i.player = p.id
-                    LEFT JOIN block_entity_action_types AS a ON i.action = a.id
+                    SELECT dim.name, blc.x, blc.y, blc.z, ier.timestamp, blc.id, src.type, ply.name, act.action, ier.info
+                    FROM block_entity_interaction AS ier
+                    LEFT JOIN block_entity AS blc ON ier.block_entity = blc.id
+                    LEFT JOIN dimension AS dim ON blc.dimension = dim.id
+                    LEFT JOIN source AS src ON ier.source = src.id
+                    LEFT JOIN players AS ply ON ier.player = ply.id
+                    LEFT JOIN block_entity_action_types AS act ON ier.action = act.id
                     
                     """ + selection_statement);
 
