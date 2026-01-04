@@ -93,7 +93,7 @@ public class BlockSimpleLookup extends SQLOperation {
                         "\n§f",
                         actionName,
                         oldBlock,
-                        "§6->§f",
+                        "§6→§f",
                         newBlock,
                         "\n§0--------------------"
                 );
