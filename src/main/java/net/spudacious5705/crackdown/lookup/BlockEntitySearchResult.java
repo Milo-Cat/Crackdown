@@ -18,7 +18,6 @@ public class BlockEntitySearchResult extends PositionalResult {
                 String[] dimension,
                 BlockPos[] blockPos,
                 int resultCount,
-                long[] timestamp,
                 int[] id,
                 String[] source,
                 String[] playerName,
@@ -26,7 +25,7 @@ public class BlockEntitySearchResult extends PositionalResult {
                 String[] info,
                 Consumer<BlockEntitySearchResult> completeAction
         ) {
-            super(dimension, blockPos, resultCount, timestamp);
+            super(dimension, blockPos, resultCount);
             this.id = id;
             this.source = source;
             player_name = playerName;
