@@ -100,6 +100,8 @@ public class CrackdownCommands {
                         )
         );
 
+        //todo this: https://discord.com/channels/638990243587948555/1300093977051136152/1457185800058831052
+
 
         event.getDispatcher().register(
                 Commands.literal("crackdown")
