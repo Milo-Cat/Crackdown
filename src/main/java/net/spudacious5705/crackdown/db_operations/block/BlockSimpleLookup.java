@@ -59,7 +59,7 @@ public class BlockSimpleLookup extends SQLOperation {
                     
                     """);
 
-            stmt.setInt(5, CommonOperations.getOrCreateId_Dimension(dimension, connection));
+            stmt.setInt(1, CommonOperations.getOrCreateId_Dimension(dimension, connection));
             stmt.setInt(2, blockPos.getX());
             stmt.setInt(3, blockPos.getY());
             stmt.setInt(4, blockPos.getZ());
